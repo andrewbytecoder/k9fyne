@@ -4,7 +4,6 @@ package main
 import (
 	"fmt"
 	"github.com/andrewbytecoder/k9fyne/config"
-	"github.com/andrewbytecoder/k9fyne/controller"
 	"github.com/andrewbytecoder/k9fyne/widgets"
 	"log"
 	"net/url"
@@ -113,7 +112,7 @@ func makeMenu(a fyne.App, w fyne.Window, c *config.Cfg) *fyne.MainMenu {
 
 	sshSettings := func() {
 		w := a.NewWindow("SSH Config")
-		w.SetContent(controller.CreateSSHClient(c.GetSSH()))
+		w.SetContent(c.GetSSH().CreateSSHClient())
 		w.Resize(fyne.NewSize(440, 520))
 		w.Show()
 	}

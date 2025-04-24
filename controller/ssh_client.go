@@ -4,6 +4,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"github.com/melbahja/goph"
 )
 
 // SSHClient ssh client info
@@ -11,6 +12,7 @@ type SSHClient struct {
 	UserName string
 	Password string
 	Address  string
+	client   *goph.Client
 }
 
 func NewSSHClient() *SSHClient {
@@ -22,7 +24,7 @@ func NewSSHClient() *SSHClient {
 }
 
 // CreateSSHClient create ssh config panel
-func CreateSSHClient(c *SSHClient) fyne.CanvasObject {
+func (c *SSHClient) CreateSSHClient() fyne.CanvasObject {
 	username := widget.NewEntry()
 	username.SetText(c.UserName)
 	username.Show()
@@ -49,6 +51,25 @@ func CreateSSHClient(c *SSHClient) fyne.CanvasObject {
 		fyne.CurrentApp().Preferences().SetString("password", c.Password)
 		fyne.CurrentApp().Preferences().SetString("address", c.Address)
 
+		if c.client != nil {
+			c.client.Close()
+			c.client = nil
+		}
+
+		auth := goph.Password(c.Password)
+		client, err := goph.New(c.UserName, c.Address, auth)
+		if err != nil {
+			fyne.CurrentApp().SendNotification(&fyne.Notification{
+				Title:   "SSH Connect Failed",
+				Content: err.Error(),
+			})
+		} else {
+			c.client = client
+			fyne.CurrentApp().SendNotification(&fyne.Notification{
+				Title:   "SSH Connect Success",
+				Content: "SSH Connect Success",
+			})
+		}
 	}
 	content := container.NewVBox(widget.NewLabelWithStyle("SSH Panel", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
 		form)
