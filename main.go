@@ -111,10 +111,11 @@ func makeMenu(a fyne.App, w fyne.Window, c *config.Cfg) *fyne.MainMenu {
 	)
 
 	sshSettings := func() {
-		w := a.NewWindow("SSH Config")
-		w.SetContent(c.GetSSH().CreateSSHClient())
-		w.Resize(fyne.NewSize(440, 520))
-		w.Show()
+		c.GetSSH().CreateSSHClient(w)
+		//w := a.NewWindow("SSH Config")
+		//w.SetContent()
+		//w.Resize(fyne.NewSize(440, 520))
+		//w.Show()
 	}
 
 	sshItem := fyne.NewMenuItem("SSH Config", sshSettings)
