@@ -30,7 +30,7 @@ func colorPicked(c color.Color, w fyne.Window) {
 }
 
 // dialogScreen loads demos of the dialogs we support
-func dialogScreen(win fyne.Window) fyne.CanvasObject {
+func dialogScreen(win fyne.Window, data interface{}) fyne.CanvasObject {
 	openFile := widget.NewButton("File Open With Filter (.jpg or .png)", func() {
 		fd := dialog.NewFileOpen(func(reader fyne.URIReadCloser, err error) {
 			if err != nil {

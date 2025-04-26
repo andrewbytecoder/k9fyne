@@ -1,4 +1,4 @@
-package controller
+package kube
 
 type KubeController struct {
 	Command

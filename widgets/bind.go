@@ -9,7 +9,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func bindingScreen(_ fyne.Window) fyne.CanvasObject {
+func bindingScreen(_ fyne.Window, d interface{}) fyne.CanvasObject {
 	f := 0.2
 	data := binding.BindFloat(&f)
 	label := widget.NewLabelWithData(binding.FloatToStringWithFormat(data, "Float value: %0.2f"))

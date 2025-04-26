@@ -28,7 +28,7 @@ func (f optionFunc) apply(log *LogConfig) {
 	f(log)
 }
 
-// AddFileName wraps or replaces the Logger's underlying zapcore.Core.
+// FileName wraps or replaces the Logger's underlying zapcore.Core.
 func FileName(fileName string) Option {
 	return optionFunc(func(lc *LogConfig) {
 		lc.Filename = fileName

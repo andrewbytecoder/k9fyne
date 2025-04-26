@@ -11,7 +11,7 @@ import (
 )
 
 // collectionScreen loads a tab panel for collection widgets
-func collectionScreen(_ fyne.Window) fyne.CanvasObject {
+func collectionScreen(_ fyne.Window, data interface{}) fyne.CanvasObject {
 	content := container.NewVBox(
 		widget.NewLabelWithStyle("func Length() int", fyne.TextAlignLeading, fyne.TextStyle{Monospace: true}),
 		widget.NewLabelWithStyle("func CreateItem() fyne.CanvasObject", fyne.TextAlignLeading, fyne.TextStyle{Monospace: true}),
@@ -21,7 +21,7 @@ func collectionScreen(_ fyne.Window) fyne.CanvasObject {
 	return container.NewCenter(content)
 }
 
-func makeGridWrapTab(_ fyne.Window) fyne.CanvasObject {
+func makeGridWrapTab(_ fyne.Window, d interface{}) fyne.CanvasObject {
 	data := make([]string, 1000)
 	for i := range data {
 		data[i] = "Test Item " + strconv.Itoa(i)
@@ -59,7 +59,7 @@ func makeGridWrapTab(_ fyne.Window) fyne.CanvasObject {
 	return split
 }
 
-func makeListTab(_ fyne.Window) fyne.CanvasObject {
+func makeListTab(_ fyne.Window, d interface{}) fyne.CanvasObject {
 	data := make([]string, 1000)
 	for i := range data {
 		data[i] = "Test Item " + strconv.Itoa(i)
@@ -99,7 +99,7 @@ func makeListTab(_ fyne.Window) fyne.CanvasObject {
 	return container.NewHSplit(list, container.NewCenter(hbox))
 }
 
-func makeTableTab(_ fyne.Window) fyne.CanvasObject {
+func makeTableTab(_ fyne.Window, data interface{}) fyne.CanvasObject {
 	t := widget.NewTableWithHeaders(
 		func() (int, int) { return 500, 150 },
 		func() fyne.CanvasObject {
@@ -119,7 +119,7 @@ func makeTableTab(_ fyne.Window) fyne.CanvasObject {
 	return t
 }
 
-func makeTreeTab(_ fyne.Window) fyne.CanvasObject {
+func makeTreeTab(_ fyne.Window, d interface{}) fyne.CanvasObject {
 	data := map[string][]string{
 		"":  {"A"},
 		"A": {"B", "D", "H", "J", "L", "O", "P", "S", "V", "Z"},

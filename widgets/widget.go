@@ -30,7 +30,7 @@ Mauris erat urna, fermentum et quam rhoncus, fringilla consequat ante. Vivamus c
 Suspendisse id maximus felis. Sed mauris odio, mattis eget mi eu, consequat tempus purus.`
 )
 
-func makeCardTab(_ fyne.Window) fyne.CanvasObject {
+func makeCardTab(_ fyne.Window, d interface{}) fyne.CanvasObject {
 	card1 := widget.NewCard("Book a table", "Which time suits?",
 		widget.NewRadioGroup([]string{"6:30pm", "7:00pm", "7:45pm"}, func(string) {}))
 	card2 := widget.NewCard("With media", "No content, with image", nil)
@@ -40,7 +40,7 @@ func makeCardTab(_ fyne.Window) fyne.CanvasObject {
 		container.NewVBox(card2))
 }
 
-func makeEntryTab(_ fyne.Window) fyne.CanvasObject {
+func makeEntryTab(_ fyne.Window, data interface{}) fyne.CanvasObject {
 	entry := widget.NewEntry()
 	entry.SetPlaceHolder("Entry")
 	entryDisabled := widget.NewEntry()
@@ -79,7 +79,7 @@ func makeTextGrid() *widget.TextGrid {
 	return grid
 }
 
-func makeTextTab(_ fyne.Window) fyne.CanvasObject {
+func makeTextTab(_ fyne.Window, data interface{}) fyne.CanvasObject {
 	label := widget.NewLabel("Label")
 
 	link, err := url.Parse("https://fyne.io/")
@@ -215,7 +215,7 @@ This styled row should also wrap as expected, but only *when required*.
 		container.NewGridWithRows(2, rich, entryLoremIpsum))
 }
 
-func makeInputTab(_ fyne.Window) fyne.CanvasObject {
+func makeInputTab(_ fyne.Window, data interface{}) fyne.CanvasObject {
 	selectEntry := widget.NewSelectEntry([]string{
 		"Option A",
 		"Option B",
@@ -274,7 +274,7 @@ func makeInputTab(_ fyne.Window) fyne.CanvasObject {
 	)
 }
 
-func makeProgressTab(_ fyne.Window) fyne.CanvasObject {
+func makeProgressTab(_ fyne.Window, data interface{}) fyne.CanvasObject {
 	progress := widget.NewProgressBar()
 
 	fprogress := widget.NewProgressBar()
@@ -304,7 +304,7 @@ func makeProgressTab(_ fyne.Window) fyne.CanvasObject {
 		widget.NewLabel("Infinite"), infProgress)
 }
 
-func makeFormTab(_ fyne.Window) fyne.CanvasObject {
+func makeFormTab(_ fyne.Window, data interface{}) fyne.CanvasObject {
 	name := widget.NewEntry()
 	name.SetPlaceHolder("John Smith")
 
@@ -342,7 +342,7 @@ func makeFormTab(_ fyne.Window) fyne.CanvasObject {
 	return form
 }
 
-func makeToolbarTab(_ fyne.Window) fyne.CanvasObject {
+func makeToolbarTab(_ fyne.Window, data interface{}) fyne.CanvasObject {
 	t := widget.NewToolbar(widget.NewToolbarAction(theme.MailComposeIcon(), func() { fmt.Println("New") }),
 		widget.NewToolbarSeparator(),
 		widget.NewToolbarSpacer(),
@@ -355,7 +355,7 @@ func makeToolbarTab(_ fyne.Window) fyne.CanvasObject {
 }
 
 // widgetScreen shows a panel containing widget demos
-func widgetScreen(_ fyne.Window) fyne.CanvasObject {
+func widgetScreen(_ fyne.Window, data interface{}) fyne.CanvasObject {
 	content := container.NewVBox(
 		widget.NewLabel("Labels"),
 		widget.NewButtonWithIcon("Icons", theme.HomeIcon(), func() {}),

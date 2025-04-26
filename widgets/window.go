@@ -9,7 +9,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func windowScreen(_ fyne.Window) fyne.CanvasObject {
+func windowScreen(_ fyne.Window, data interface{}) fyne.CanvasObject {
 	var visibilityWindow fyne.Window = nil
 	var visibilityState bool = false
 

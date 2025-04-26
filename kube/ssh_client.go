@@ -1,6 +1,7 @@
-package controller
+package kube
 
 import (
+	"context"
 	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/data/validation"
@@ -12,6 +13,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/yaml.v3"
 	"io"
+	"k8s.io/client-go/kubernetes"
 	"log"
 	"net"
 	"net/url"
@@ -22,17 +24,19 @@ import (
 	"time"
 )
 
-// SSHClient ssh client info
-type SSHClient struct {
+// Client ssh client info
+type Client struct {
+	ctx       context.Context
 	log       *zap.Logger
+	kc        *kubernetes.Clientset
 	UserName  string
 	Password  string
 	Address   string
 	mapClient map[string]*goph.Client // address to client
 }
 
-func NewSSHClient(l *zap.Logger) *SSHClient {
-	return &SSHClient{
+func NewSSHClient(l *zap.Logger) *Client {
+	return &Client{
 		log:       l,
 		UserName:  fyne.CurrentApp().Preferences().String("username"),
 		Password:  fyne.CurrentApp().Preferences().String("password"),
@@ -41,7 +45,7 @@ func NewSSHClient(l *zap.Logger) *SSHClient {
 	}
 }
 
-func (c *SSHClient) GetMasterClient() (*goph.Client, error) {
+func (c *Client) GetMasterClient() (*goph.Client, error) {
 	cl, err := c.GetClientByAddress(c.Address)
 	if err != nil {
 		return nil, err
@@ -49,7 +53,7 @@ func (c *SSHClient) GetMasterClient() (*goph.Client, error) {
 	return cl, nil
 }
 
-func (c *SSHClient) SetMasterClient(client *goph.Client) error {
+func (c *Client) SetMasterClient(client *goph.Client) error {
 	if client == nil {
 		return fmt.Errorf("client is nil")
 	}
@@ -57,7 +61,7 @@ func (c *SSHClient) SetMasterClient(client *goph.Client) error {
 	return c.SetClientByAddress(c.Address, client)
 }
 
-func (c *SSHClient) GetClientByAddress(address string) (*goph.Client, error) {
+func (c *Client) GetClientByAddress(address string) (*goph.Client, error) {
 	if cl, ok := c.mapClient[c.Address]; ok {
 		return cl, nil
 	}
@@ -65,7 +69,7 @@ func (c *SSHClient) GetClientByAddress(address string) (*goph.Client, error) {
 	return nil, fmt.Errorf("client is nil")
 }
 
-func (c *SSHClient) SetClientByAddress(address string, client *goph.Client) error {
+func (c *Client) SetClientByAddress(address string, client *goph.Client) error {
 	if client == nil {
 		return fmt.Errorf("client param is nil")
 	}
@@ -78,7 +82,7 @@ func (c *SSHClient) SetClientByAddress(address string, client *goph.Client) erro
 	return nil
 
 }
-func (c *SSHClient) CloseClientByAddress(address string) {
+func (c *Client) CloseClientByAddress(address string) {
 	if cl, ok := c.mapClient[address]; ok {
 		cl.Close()
 		delete(c.mapClient, address)
@@ -99,7 +103,7 @@ func VerifyHost(host string, remote net.Addr, key ssh.PublicKey) error {
 }
 
 // CreateSSHClient create ssh config panel
-func (c *SSHClient) CreateSSHClient(win fyne.Window) {
+func (c *Client) CreateSSHClient(win fyne.Window) {
 	username := widget.NewEntry()
 	username.Validator = validation.NewRegexp(`^[A-Za-z0-9_-]+$`, "username can only contain letters, numbers, '_', and '-'")
 	username.SetText(c.UserName)
@@ -195,6 +199,18 @@ func (c *SSHClient) CreateSSHClient(win fyne.Window) {
 				Content: err.Error(),
 			})
 		}
+		// todo: 后面config 文件修改成配置文件
+		c.kc, err = NewKubeClient("./config.yaml", c.log)
+		if err != nil {
+			fyne.CurrentApp().SendNotification(&fyne.Notification{
+				Title:   "Get kube config failed",
+				Content: err.Error(),
+			})
+			return
+		}
+
+		// 获取成功创建 kube info 相关的客户端
+		K9InfoHandler = NewK9Info(SetPodInfoInterface(NewK9PodInfo(c.ctx, c.kc, c.log)))
 
 	}, win)
 	formDialog.Resize(fyne.NewSize(440, 280))
@@ -250,7 +266,7 @@ func replaceHostInURL(ipWithPort, originalURL string) (string, error) {
 	// 返回修改后的 URL 字符串
 	return parsedURL.String(), nil
 }
-func (c *SSHClient) GetKubeConfig() error {
+func (c *Client) GetKubeConfig() error {
 
 	client, err := c.GetMasterClient()
 	if err != nil {

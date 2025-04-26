@@ -17,8 +17,8 @@ func rgbGradient(x, y, w, h int) color.Color {
 	return color.NRGBA{uint8(255 - b), uint8(g), uint8(b), 0xff}
 }
 
-// canvasScreen loads a graphics example panel for the demo app
-func canvasScreen(_ fyne.Window) fyne.CanvasObject {
+// k9Doc loads a graphics example panel for the demo app
+func k9Doc(_ fyne.Window, Data interface{}) fyne.CanvasObject {
 	return container.NewGridWrap(fyne.NewSize(90, 90),
 		canvas.NewImageFromResource(data.FyneLogo),
 		&canvas.Rectangle{FillColor: color.NRGBA{0x80, 0, 0, 0xff},

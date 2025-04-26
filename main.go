@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"github.com/andrewbytecoder/k9fyne/config"
+	"github.com/andrewbytecoder/k9fyne/kube"
 	"github.com/andrewbytecoder/k9fyne/widgets"
 	"go.uber.org/zap"
 	"log"
@@ -41,37 +42,34 @@ func main() {
 	intro.Wrapping = fyne.TextWrapWord
 
 	top := container.NewVBox(title, widget.NewSeparator(), intro)
-	setTutorial := func(t widgets.Tutorial) {
-		if fyne.CurrentDevice().IsMobile() {
-			child := ctx.App.NewWindow(t.Title)
-			topWindow = child
-			child.SetContent(t.View(topWindow))
-			child.Show()
-			child.SetOnClosed(func() {
-				topWindow = ctx.GetWindow()
-			})
-			return
-		}
-
+	setContent := func(t widgets.Tutorial) {
 		title.SetText(t.Title)
 		isMarkdown := len(t.Intro) == 0
 		if !isMarkdown {
 			intro.SetText(t.Intro)
 		}
 
-		if t.Title == "Welcome" || isMarkdown {
+		if kube.K9InfoHandler != nil {
+			err := kube.K9InfoHandler.FetchData(&t)
+			if err != nil {
+				ctx.Log.Error("Failed to fetch data", zap.Error(err))
+				return
+			}
+		}
+
+		if t.Title == "Kubernetes" || isMarkdown {
 			top.Hide()
 		} else {
 			top.Show()
 		}
 
-		content.Objects = []fyne.CanvasObject{t.View(ctx.GetWindow())}
+		content.Objects = []fyne.CanvasObject{t.View(ctx.GetWindow(), t.Data)}
 		content.Refresh()
 	}
 
 	tutorial := container.NewBorder(
 		top, nil, nil, nil, content)
-	split := container.NewHSplit(makeNav(setTutorial, true), tutorial)
+	split := container.NewHSplit(makeNav(setContent, true), tutorial)
 	split.Offset = 0.2
 	ctx.GetWindow().SetContent(split)
 	ctx.GetWindow().Resize(fyne.NewSize(640, 460))

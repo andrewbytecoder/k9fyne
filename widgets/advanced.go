@@ -27,7 +27,7 @@ func prependTo(g *fyne.Container, s string) {
 
 // advancedScreen loads a panel that shows details and settings that are a bit
 // more detailed than normally needed.
-func advancedScreen(win fyne.Window) fyne.CanvasObject {
+func advancedScreen(win fyne.Window, data interface{}) fyne.CanvasObject {
 	scale := widget.NewLabel("")
 	tex := widget.NewLabel("")
 

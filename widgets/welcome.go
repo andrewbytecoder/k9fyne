@@ -23,7 +23,7 @@ func parseURL(urlStr string) *url.URL {
 	return link
 }
 
-func welcomeScreen(_ fyne.Window) fyne.CanvasObject {
+func welcomeScreen(_ fyne.Window, Data interface{}) fyne.CanvasObject {
 	logo := canvas.NewImageFromResource(data.FyneLogoTransparent)
 	logo.FillMode = canvas.ImageFillContain
 	if fyne.CurrentDevice().IsMobile() {

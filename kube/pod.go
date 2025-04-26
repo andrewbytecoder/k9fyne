@@ -1,90 +1,52 @@
 package kube
 
 import (
-	"fmt"
-	"strings"
+	"context"
+	"go.uber.org/zap"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"time"
 )
 
-// Pod kubectl get pod -A -o wide
-type Pod struct {
-	Namespace      string `json:"NAMESPACE"`
-	Name           string `json:"NAME"`
-	Ready          string `json:"READY"`
-	Status         string `json:"STATUS"`
-	Restarts       string `json:"RESTARTS"`
-	Age            string `json:"AGE"`
-	Ip             string `json:"IP"`
-	Node           string `json:"NODE"`
-	NominatedNode  string `json:"NOMINATED NODE"`
-	ReadinessGates string `json:"READINESS GATES"`
+type K9PodInfo struct {
+	ctx     context.Context
+	log     *zap.Logger
+	kc      *kubernetes.Clientset
+	podList *corev1.PodList
+	podsMap map[string]*PodInfo
 }
 
-type PodsInfo struct {
-	PodMap          map[string]*Pod
-	Namespaces2Pods map[string][]*Pod
-}
-
-func NewPodsInfo() *PodsInfo {
-	return &PodsInfo{
-		PodMap:          make(map[string]*Pod),
-		Namespaces2Pods: make(map[string][]*Pod),
+func NewK9PodInfo(ctx context.Context, k *kubernetes.Clientset, log *zap.Logger) *K9PodInfo {
+	return &K9PodInfo{
+		ctx:     ctx,
+		log:     log,
+		kc:      k,
+		podList: nil,
+		podsMap: make(map[string]*PodInfo),
 	}
 }
 
-func parsePods(input string) ([]*Pod, error) {
-	var pods []*Pod
-
-	// 按行分割输入数据
-	lines := strings.Split(input, "\n")
-	if len(lines) < 2 {
-		return nil, fmt.Errorf("invalid input format")
-	}
-
-	// 获取表头
-	headers := strings.Fields(lines[0])
-
-	// 遍历每一行数据（跳过表头）
-	for _, line := range lines[1:] {
-		if strings.TrimSpace(line) == "" {
-			continue // 跳过空行
-		}
-
-		// 分割字段
-		fields := strings.Fields(line)
-		if len(fields) != len(headers) {
-			return nil, fmt.Errorf("mismatched fields in line: %s", line)
-		}
-
-		// 映射字段到结构体
-		pod := &Pod{
-			Namespace:      fields[0],
-			Name:           fields[1],
-			Ready:          fields[2],
-			Status:         fields[3],
-			Restarts:       fields[4],
-			Age:            fields[5],
-			Ip:             fields[6],
-			Node:           fields[7],
-			NominatedNode:  fields[8],
-			ReadinessGates: fields[9],
-		}
-
-		// 添加到结果列表
-		pods = append(pods, pod)
-	}
-
-	return pods, nil
+type PodInfo struct {
+	podMap map[string]corev1.Pod // Pod name 2 Pod
 }
 
-func (p *PodsInfo) ParsePods(input string) error {
-	pods, err := parsePods(input)
+type PodInfoInterface interface {
+	GetAllNamespace() []string
+}
+
+func (p *K9PodInfo) GetAllNamespace() []string {
+	ctx, cancel := context.WithTimeout(p.ctx, 10*time.Second)
+	defer cancel()
+	// 3. 获取所有的 Namespace
+	listItem, err := p.kc.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 	if err != nil {
-		return err
+		p.log.Error("无法获取 Namespace 列表", zap.Error(err))
+		return nil
 	}
-	for _, pod := range pods {
-		p.PodMap[pod.Name] = pod
-		p.Namespaces2Pods[pod.Namespace] = append(p.Namespaces2Pods[pod.Namespace], pod)
+	allNamespace := make([]string, 0)
+	for _, item := range listItem.Items {
+		allNamespace = append(allNamespace, item.Name)
 	}
-	
-	return nil
+	return allNamespace
 }
