@@ -6,7 +6,10 @@ require (
 	fyne.io/fyne/v2 v2.6.0
 	github.com/alecthomas/chroma/v2 v2.15.0
 	github.com/fyne-io/demo v0.0.0-20250411084315-c83a8ea96f00
+	github.com/melbahja/goph v1.4.0
 	github.com/stretchr/testify v1.10.0
+	golang.org/x/crypto v0.33.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -30,7 +33,6 @@ require (
 	github.com/jeandeaual/go-locale v0.0.0-20241217141322-fcc2cadd6f08 // indirect
 	github.com/jsummers/gobmp v0.0.0-20230614200233-a9de23ed2e25 // indirect
 	github.com/kr/fs v0.1.0 // indirect
-	github.com/melbahja/goph v1.4.0 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/nicksnyder/go-i18n/v2 v2.5.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -40,10 +42,11 @@ require (
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/yuin/goldmark v1.7.8 // indirect
-	golang.org/x/crypto v0.33.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
+	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/image v0.24.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 )

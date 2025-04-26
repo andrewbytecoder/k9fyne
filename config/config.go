@@ -1,14 +1,19 @@
 package config
 
-import "github.com/andrewbytecoder/k9fyne/controller"
+import (
+	"github.com/andrewbytecoder/k9fyne/controller"
+	"go.uber.org/zap"
+)
 
 type Cfg struct {
+	log *zap.Logger
 	SSH *controller.SSHClient
 }
 
-func NewConfig() *Cfg {
+func NewConfig(l *zap.Logger) *Cfg {
 	return &Cfg{
-		SSH: controller.NewSSHClient(),
+		log: l,
+		SSH: controller.NewSSHClient(l),
 	}
 }
 

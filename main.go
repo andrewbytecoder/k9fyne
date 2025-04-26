@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/andrewbytecoder/k9fyne/config"
 	"github.com/andrewbytecoder/k9fyne/widgets"
+	"go.uber.org/zap"
 	"log"
 	"net/url"
 
@@ -27,11 +28,11 @@ func main() {
 
 	ctx.App.SetIcon(data.FyneLogo)
 	makeTray(ctx.App)
-	logLifecycle(ctx.App)
-	ctx.SetWindow(ctx.App.NewWindow("k9fyne"))
-	topWindow = ctx.GetWindow()
+	logLifecycle(ctx.App, ctx.GetLogger())
+	topWindow = ctx.App.NewWindow("k9fyne")
+	ctx.SetWindow(topWindow)
 
-	ctx.GetWindow().SetMainMenu(makeMenu(ctx.App, ctx.GetWindow(), ctx.GetConfig()))
+	ctx.GetWindow().SetMainMenu(makeMenu(ctx.App, topWindow, ctx.GetConfig()))
 	ctx.GetWindow().SetMaster()
 
 	content := container.NewStack()
@@ -70,18 +71,14 @@ func main() {
 
 	tutorial := container.NewBorder(
 		top, nil, nil, nil, content)
-	if fyne.CurrentDevice().IsMobile() {
-		ctx.GetWindow().SetContent(makeNav(setTutorial, false))
-	} else {
-		split := container.NewHSplit(makeNav(setTutorial, true), tutorial)
-		split.Offset = 0.2
-		ctx.GetWindow().SetContent(split)
-	}
+	split := container.NewHSplit(makeNav(setTutorial, true), tutorial)
+	split.Offset = 0.2
+	ctx.GetWindow().SetContent(split)
 	ctx.GetWindow().Resize(fyne.NewSize(640, 460))
 	ctx.GetWindow().ShowAndRun()
 }
 
-func logLifecycle(a fyne.App) {
+func logLifecycle(a fyne.App, l *zap.Logger) {
 	a.Lifecycle().SetOnStarted(func() {
 		log.Println("Lifecycle: Started")
 	})
@@ -98,34 +95,14 @@ func logLifecycle(a fyne.App) {
 
 func makeMenu(a fyne.App, w fyne.Window, c *config.Cfg) *fyne.MainMenu {
 	newItem := fyne.NewMenuItem("New", nil)
-	checkedItem := fyne.NewMenuItem("Checked", nil)
-	checkedItem.Checked = true
-	disabledItem := fyne.NewMenuItem("Disabled", nil)
-	disabledItem.Disabled = true
-	otherItem := fyne.NewMenuItem("Other", nil)
-	mailItem := fyne.NewMenuItem("Mail", func() { fmt.Println("Menu New->Other->Mail") })
-	mailItem.Icon = theme.MailComposeIcon()
-	otherItem.ChildMenu = fyne.NewMenu("",
-		fyne.NewMenuItem("Project", func() { fmt.Println("Menu New->Other->Project") }),
-		mailItem,
-	)
-
 	sshSettings := func() {
 		c.GetSSH().CreateSSHClient(w)
-		//w := a.NewWindow("SSH Config")
-		//w.SetContent()
-		//w.Resize(fyne.NewSize(440, 520))
-		//w.Show()
 	}
 
 	sshItem := fyne.NewMenuItem("SSH Config", sshSettings)
 	sshItem.Icon = theme.ComputerIcon()
-	dirItem := fyne.NewMenuItem("Directory", func() { fmt.Println("Menu New->Directory") })
-	dirItem.Icon = theme.FolderIcon()
 	newItem.ChildMenu = fyne.NewMenu("",
 		sshItem,
-		dirItem,
-		otherItem,
 	)
 
 	openSettings := func() {
@@ -134,12 +111,6 @@ func makeMenu(a fyne.App, w fyne.Window, c *config.Cfg) *fyne.MainMenu {
 		w.Resize(fyne.NewSize(440, 520))
 		w.Show()
 	}
-	showAbout := func() {
-		w := a.NewWindow("About")
-		w.SetContent(widget.NewLabel("About Fyne Demo app..."))
-		w.Show()
-	}
-	aboutItem := fyne.NewMenuItem("About", showAbout)
 	settingsItem := fyne.NewMenuItem("Settings", openSettings)
 	settingsShortcut := &desktop.CustomShortcut{KeyName: fyne.KeyComma, Modifier: fyne.KeyModifierShortcutDefault}
 	settingsItem.Shortcut = settingsShortcut
@@ -185,21 +156,14 @@ func makeMenu(a fyne.App, w fyne.Window, c *config.Cfg) *fyne.MainMenu {
 		}))
 
 	// a quit item will be appended to our first (File) menu
-	file := fyne.NewMenu("File", newItem, checkedItem, disabledItem)
-	device := fyne.CurrentDevice()
-	if !device.IsMobile() && !device.IsBrowser() {
-		file.Items = append(file.Items, fyne.NewMenuItemSeparator(), settingsItem)
-	}
-	file.Items = append(file.Items, aboutItem)
+	file := fyne.NewMenu("File", newItem)
+	file.Items = append(file.Items, fyne.NewMenuItemSeparator(), settingsItem)
 	main := fyne.NewMainMenu(
 		file,
 		fyne.NewMenu("Edit", cutItem, copyItem, pasteItem, fyne.NewMenuItemSeparator(), findItem),
 		helpMenu,
 	)
-	checkedItem.Action = func() {
-		checkedItem.Checked = !checkedItem.Checked
-		main.Refresh()
-	}
+
 	return main
 }
 

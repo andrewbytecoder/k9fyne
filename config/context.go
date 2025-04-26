@@ -4,6 +4,8 @@ import (
 	"context"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"github.com/andrewbytecoder/k9fyne/utils"
+	"go.uber.org/zap"
 )
 
 type Ctx struct {
@@ -11,16 +13,25 @@ type Ctx struct {
 	App    fyne.App
 	Window fyne.Window
 	Config *Cfg
+	Log    *zap.Logger
 }
 
 func NewCtx() *Ctx {
+	log, err := utils.GetZapLog(utils.NewLogConfig(utils.LogLevel("debug"), utils.FileName("k9fyne.log")))
+	if err != nil {
+		panic(err)
+	}
 	return &Ctx{
 		Ctx:    context.Background(),
 		App:    app.NewWithID("k9fyne"),
-		Config: NewConfig(),
+		Config: NewConfig(log),
+		Log:    log,
 	}
 }
 
+func (ctx *Ctx) GetLogger() *zap.Logger {
+	return ctx.Log
+}
 func (ctx *Ctx) SetWindow(window fyne.Window) *Ctx {
 	ctx.Window = window
 	return ctx

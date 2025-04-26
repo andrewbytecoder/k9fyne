@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/andrewbytecoder/k9fyne/utils"
 	"github.com/melbahja/goph"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/yaml.v3"
 	"io"
@@ -15,32 +16,81 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
 
 // SSHClient ssh client info
 type SSHClient struct {
-	UserName string
-	Password string
-	Address  string
-	client   *goph.Client
+	log       *zap.Logger
+	UserName  string
+	Password  string
+	Address   string
+	mapClient map[string]*goph.Client // address to client
 }
 
-func NewSSHClient() *SSHClient {
+func NewSSHClient(l *zap.Logger) *SSHClient {
 	return &SSHClient{
-		UserName: fyne.CurrentApp().Preferences().String("username"),
-		Password: fyne.CurrentApp().Preferences().String("password"),
-		Address:  fyne.CurrentApp().Preferences().String("address"),
+		log:       l,
+		UserName:  fyne.CurrentApp().Preferences().String("username"),
+		Password:  fyne.CurrentApp().Preferences().String("password"),
+		Address:   fyne.CurrentApp().Preferences().String("address"),
+		mapClient: make(map[string]*goph.Client),
 	}
 }
-func VerifyHost(host string, remote net.Addr, key ssh.PublicKey) error {
 
+func (c *SSHClient) GetMasterClient() (*goph.Client, error) {
+	cl, err := c.GetClientByAddress(c.Address)
+	if err != nil {
+		return nil, err
+	}
+	return cl, nil
+}
+
+func (c *SSHClient) SetMasterClient(client *goph.Client) error {
+	if client == nil {
+		return fmt.Errorf("client is nil")
+	}
+
+	return c.SetClientByAddress(c.Address, client)
+}
+
+func (c *SSHClient) GetClientByAddress(address string) (*goph.Client, error) {
+	if cl, ok := c.mapClient[c.Address]; ok {
+		return cl, nil
+	}
+
+	return nil, fmt.Errorf("client is nil")
+}
+
+func (c *SSHClient) SetClientByAddress(address string, client *goph.Client) error {
+	if client == nil {
+		return fmt.Errorf("client param is nil")
+	}
+
+	if cl, ok := c.mapClient[address]; ok {
+		cl.Close()
+	}
+	// 替换原来的客户端，原先的客户端已经关闭，这里字节替换
+	c.mapClient[address] = client
+	return nil
+
+}
+func (c *SSHClient) CloseClientByAddress(address string) {
+	if cl, ok := c.mapClient[address]; ok {
+		cl.Close()
+		delete(c.mapClient, address)
+	}
+}
+
+func VerifyHost(host string, remote net.Addr, key ssh.PublicKey) error {
 	hostFound, err := goph.CheckKnownHost(host, remote, key, "")
 	if hostFound && err != nil {
 		return err
 	}
-	if hostFound && err == nil {
+	if hostFound {
 		return nil
 	}
 
@@ -60,16 +110,21 @@ func (c *SSHClient) CreateSSHClient(win fyne.Window) {
 	password.SetText(c.Password)
 
 	remember := false
+	check := widget.NewCheck("", func(checked bool) {
+		remember = checked
+		fyne.CurrentApp().Preferences().SetBool("remember", checked)
+	})
+
+	check.Checked = fyne.CurrentApp().Preferences().Bool("remember")
+
 	items := []*widget.FormItem{
 		widget.NewFormItem("Address", address),
 		widget.NewFormItem("Username", username),
 		widget.NewFormItem("Password", password),
-		widget.NewFormItem("Remember me", widget.NewCheck("", func(checked bool) {
-			remember = checked
-		})),
+		widget.NewFormItem("Remember me", check),
 	}
 
-	dialog.ShowForm("Login...", "Log In", "Cancel", items, func(b bool) {
+	formDialog := dialog.NewForm("Login...", "Log In", "Cancel", items, func(b bool) {
 		if !b {
 			return
 		}
@@ -77,7 +132,10 @@ func (c *SSHClient) CreateSSHClient(win fyne.Window) {
 		if remember {
 			rememberText = "and remember this login"
 		}
-
+		fyne.CurrentApp().SendNotification(&fyne.Notification{
+			Title:   "SSH Connect Failed",
+			Content: "SSH Connect Failed",
+		})
 		log.Println("Please Authenticate", username.Text, password.Text, rememberText)
 		// save the ssh config info
 		c.UserName = username.Text
@@ -92,11 +150,8 @@ func (c *SSHClient) CreateSSHClient(win fyne.Window) {
 			fyne.CurrentApp().Preferences().RemoveValue("password")
 			fyne.CurrentApp().Preferences().RemoveValue("address")
 		}
-
-		if c.client != nil {
-			c.client.Close()
-			c.client = nil
-		}
+		// 现关闭原来的客户端
+		c.CloseClientByAddress(c.Address)
 
 		parseAddress, port, err := utils.ParseAddress(c.Address)
 		if err != nil {
@@ -123,7 +178,14 @@ func (c *SSHClient) CreateSSHClient(win fyne.Window) {
 				Content: err.Error(),
 			})
 		} else {
-			c.client = client
+			err := c.SetMasterClient(client)
+			if err != nil {
+				fyne.CurrentApp().SendNotification(&fyne.Notification{
+					Title:   "SSH Connect Failed",
+					Content: err.Error(),
+				})
+				return
+			}
 
 		}
 		err = c.GetKubeConfig()
@@ -135,10 +197,8 @@ func (c *SSHClient) CreateSSHClient(win fyne.Window) {
 		}
 
 	}, win)
-}
-
-func (c *SSHClient) GetClient() *goph.Client {
-	return c.client
+	formDialog.Resize(fyne.NewSize(440, 280))
+	formDialog.Show()
 }
 
 // KubeConfig 定义结构体以解析 YAML 数据
@@ -191,17 +251,30 @@ func replaceHostInURL(ipWithPort, originalURL string) (string, error) {
 	return parsedURL.String(), nil
 }
 func (c *SSHClient) GetKubeConfig() error {
-	if c.client == nil {
-		return fmt.Errorf("ssh client is nil")
+
+	client, err := c.GetMasterClient()
+	if err != nil {
+		return err
 	}
 
-	sftp, err := c.client.NewSftp()
+	sftp, err := client.NewSftp()
 	if err != nil {
 		return err
 	}
 	defer sftp.Close()
 
-	kubeConfigFile, err := sftp.OpenFile("/root/.kube/config", os.O_RDONLY)
+	var filePath string
+	if runtime.GOOS == "windows" {
+		filePath = "/" + c.UserName + "/.kube/config"
+	} else {
+		if c.UserName == "root" {
+			filePath = filepath.Join("/", c.UserName, ".kube", "config")
+		} else {
+			filePath = filepath.Join("/home/", c.UserName, ".kube", "config")
+		}
+	}
+
+	kubeConfigFile, err := sftp.OpenFile(filePath, os.O_RDONLY)
 	if err != nil {
 		return err
 	}
@@ -218,7 +291,7 @@ func (c *SSHClient) GetKubeConfig() error {
 	}
 	// 解析 YAML 内容到结构体
 	var kubeConfig KubeConfig
-	err = yaml.Unmarshal([]byte(buffer), &kubeConfig)
+	err = yaml.Unmarshal(buffer, &kubeConfig)
 	if err != nil {
 		log.Fatalf("无法解析 YAML: %v", err)
 		return err
