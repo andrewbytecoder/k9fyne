@@ -9,6 +9,8 @@ import (
 	"github.com/andrewbytecoder/k9fyne/kube/pod"
 	corev1 "k8s.io/api/core/v1"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type PodWidgetsInfo struct {
@@ -16,6 +18,9 @@ type PodWidgetsInfo struct {
 	namespace        []string
 	namespaceSelect  *widget.Select // 命名空间名字
 	currentPod       int
+	table            *widget.Table // pod info table
+	podInfoInterface pod.KubePodInfoInterface
+	container        *fyne.Container
 }
 
 var podInfoCols = []string{
@@ -24,17 +29,38 @@ var podInfoCols = []string{
 	"PodIp",
 	"NodeIp",
 	"NodeName",
+	"Age",
+	"Containers",
 }
 
-func (p *PodWidgetsInfo) SetCurrentNameSpace(idx int) {
+func (b *PodWidgetsInfo) SetCurrentNameSpace(idx int) {
 	// 超过正常的范围
-	if idx >= len(p.namespace) || idx < 0 {
+	if idx >= len(b.namespace) || idx < 0 {
 		return
 	}
+
+	bFlush := false
+	if b.currentNameSpace != idx {
+		bFlush = true
+	}
+
 	// 保证这里只设置合法的 namespace 索引
-	p.currentNameSpace = idx
+	b.currentNameSpace = idx
 	// 更新list链表里面的数据
-	p.namespaceSelect.SetSelected(p.namespace[idx])
+	b.namespaceSelect.SetSelected(b.namespace[idx])
+
+	if bFlush {
+		//	 表数据
+		podList, err := b.podInfoInterface.GetPodInfoByNamespace(b.namespace[b.currentNameSpace])
+		if err != nil {
+			return
+		}
+		table := makePodInfoTable(nil, podList)
+		b.container.Remove(b.table)
+		b.container.Add(table)
+		b.table = table
+		b.container.Refresh()
+	}
 }
 
 func makePodList(win fyne.Window, d interface{}) fyne.CanvasObject {
@@ -47,7 +73,7 @@ func makePodList(win fyne.Window, d interface{}) fyne.CanvasObject {
 
 	b := &PodWidgetsInfo{}
 	b.namespace = podInterface.GetAllNamespace()
-
+	b.podInfoInterface = podInterface
 	prev := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
 		b.SetCurrentNameSpace(b.currentNameSpace - 1)
 	})
@@ -75,12 +101,21 @@ func makePodList(win fyne.Window, d interface{}) fyne.CanvasObject {
 			widget.NewButton("Set ssh config first", func() {}))
 	}
 
-	podTable := makePodInfoTable(win, podList)
-
-	return container.NewBorder(bar, nil, nil, nil, podTable)
+	b.table = makePodInfoTable(nil, podList)
+	b.container = container.NewBorder(bar, nil, nil, nil, b.table)
+	return b.container
 }
 
-func makePodInfoTable(_ fyne.Window, podList *corev1.PodList) fyne.CanvasObject {
+// formatDuration 格式化时间差为人类可读的形式
+func formatDuration(duration time.Duration) string {
+	days := int(duration.Hours() / 24)
+	hours := int(duration.Hours()) % 24
+	minutes := int(duration.Minutes()) % 60
+	seconds := int(duration.Seconds()) % 60
+
+	return fmt.Sprintf("%dd %dh %dm %ds", days, hours, minutes, seconds)
+}
+func makePodInfoTable(_ fyne.Window, podList *corev1.PodList) *widget.Table {
 
 	rows := len(podList.Items)
 	cols := len(podInfoCols)
@@ -102,6 +137,13 @@ func makePodInfoTable(_ fyne.Window, podList *corev1.PodList) fyne.CanvasObject 
 				label.SetText(podList.Items[id.Row].Status.HostIP)
 			case 4:
 				label.SetText(podList.Items[id.Row].Spec.NodeName)
+			case 5:
+				creationTime := podList.Items[id.Row].ObjectMeta.CreationTimestamp.Time
+				duration := time.Since(creationTime)
+				age := formatDuration(duration)
+				label.SetText(age)
+			case 6:
+				label.SetText(GetContainerInfo(&podList.Items[id.Row]))
 			default:
 				label.SetText(fmt.Sprintf("Cell %d, %d", id.Row+1, id.Col+1))
 			}
@@ -126,12 +168,41 @@ func makePodInfoTable(_ fyne.Window, podList *corev1.PodList) fyne.CanvasObject 
 
 	t.StickyRowCount = 0
 
-	t.SetColumnWidth(0, 420)
-	t.SetColumnWidth(1, 132)
-	t.SetColumnWidth(2, 320)
-	t.SetColumnWidth(3, 320)
-	t.SetColumnWidth(4, 260)
+	t.SetColumnWidth(0, 380)
+	t.SetColumnWidth(1, 100)
+	t.SetColumnWidth(2, 130)
+	t.SetColumnWidth(3, 130)
+	t.SetColumnWidth(4, 130)
+	t.SetColumnWidth(5, 200)
+	t.SetColumnWidth(6, 500)
 	t.SetRowHeight(2, 50)
 
 	return t
+}
+
+func GetContainerInfo(pod *corev1.Pod) string {
+	var result strings.Builder
+
+	// 遍历所有容器状态
+	for _, containerStatus := range pod.Status.ContainerStatuses {
+		result.WriteString(fmt.Sprintf("容器名称: %s", containerStatus.Name))
+		result.WriteString(fmt.Sprintf(":状态: %v", GetContainerState(&containerStatus.State)))
+		result.WriteString(fmt.Sprintf(":重启次数: %d", containerStatus.RestartCount))
+	}
+
+	return result.String()
+}
+
+func GetContainerState(state *corev1.ContainerState) string {
+
+	if state.Running != nil {
+		return "Running"
+	}
+	if state.Terminated != nil {
+		return "Terminated"
+	}
+	if state.Waiting != nil {
+		return "Waiting"
+	}
+	return ""
 }
