@@ -4,7 +4,6 @@ import (
 	"context"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"github.com/andrewbytecoder/k9fyne/kube"
 	"github.com/andrewbytecoder/k9fyne/utils"
 	"go.uber.org/zap"
 )
@@ -15,7 +14,6 @@ type Ctx struct {
 	Window fyne.Window
 	Config *Cfg
 	Log    *zap.Logger
-	k9Info *kube.K9Info
 }
 
 func NewCtx() *Ctx {
@@ -23,10 +21,11 @@ func NewCtx() *Ctx {
 	if err != nil {
 		panic(err)
 	}
+	ctx := context.Background()
 	return &Ctx{
-		Ctx:    context.Background(),
+		Ctx:    ctx,
 		App:    app.NewWithID("k9fyne"),
-		Config: NewConfig(log),
+		Config: NewConfig(log, ctx),
 		Log:    log,
 	}
 }
@@ -54,13 +53,4 @@ func (ctx *Ctx) GetApp() fyne.App {
 }
 func (ctx *Ctx) GetConfig() *Cfg {
 	return ctx.Config
-}
-
-func (ctx *Ctx) GetK9Info() *kube.K9Info {
-	return ctx.k9Info
-}
-
-func (ctx *Ctx) SetK9Info(k9Info *kube.K9Info) *Ctx {
-	ctx.k9Info = k9Info
-	return ctx
 }

@@ -1,4 +1,4 @@
-package kube
+package kubeclient
 
 import (
 	"context"
@@ -7,6 +7,8 @@ import (
 	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+	"github.com/andrewbytecoder/k9fyne/kube/pod"
+	"github.com/andrewbytecoder/k9fyne/kube/topo"
 	"github.com/andrewbytecoder/k9fyne/utils"
 	"github.com/melbahja/goph"
 	"go.uber.org/zap"
@@ -35,8 +37,9 @@ type Client struct {
 	mapClient map[string]*goph.Client // address to client
 }
 
-func NewSSHClient(l *zap.Logger) *Client {
+func NewSSHClient(l *zap.Logger, ctx context.Context) *Client {
 	return &Client{
+		ctx:       ctx,
 		log:       l,
 		UserName:  fyne.CurrentApp().Preferences().String("username"),
 		Password:  fyne.CurrentApp().Preferences().String("password"),
@@ -113,12 +116,12 @@ func (c *Client) CreateSSHClient(win fyne.Window) {
 	//password.Validator = validation.NewRegexp(`^[A-Za-z0-9_-@]+$`, "password can only contain letters, numbers, '_', and '-'")
 	password.SetText(c.Password)
 
-	remember := false
+	remember := fyne.CurrentApp().Preferences().Bool("remember")
 	check := widget.NewCheck("", func(checked bool) {
 		remember = checked
 		fyne.CurrentApp().Preferences().SetBool("remember", checked)
 	})
-
+	// 界面和真实数据之间要联动起来
 	check.Checked = fyne.CurrentApp().Preferences().Bool("remember")
 
 	items := []*widget.FormItem{
@@ -136,10 +139,7 @@ func (c *Client) CreateSSHClient(win fyne.Window) {
 		if remember {
 			rememberText = "and remember this login"
 		}
-		fyne.CurrentApp().SendNotification(&fyne.Notification{
-			Title:   "SSH Connect Failed",
-			Content: "SSH Connect Failed",
-		})
+
 		log.Println("Please Authenticate", username.Text, password.Text, rememberText)
 		// save the ssh config info
 		c.UserName = username.Text
@@ -210,7 +210,7 @@ func (c *Client) CreateSSHClient(win fyne.Window) {
 		}
 
 		// 获取成功创建 kube info 相关的客户端
-		K9InfoHandler = NewK9Info(SetPodInfoInterface(NewK9PodInfo(c.ctx, c.kc, c.log)))
+		topo.K9InfoHandler = topo.NewK9Info(topo.SetPodInfoInterface(pod.NewK9PodInfo(c.ctx, c.kc, c.log)))
 
 	}, win)
 	formDialog.Resize(fyne.NewSize(440, 280))

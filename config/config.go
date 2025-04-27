@@ -1,22 +1,23 @@
 package config
 
 import (
-	"github.com/andrewbytecoder/k9fyne/kube"
+	"context"
+	kubeclient "github.com/andrewbytecoder/k9fyne/kube/kube_client"
 	"go.uber.org/zap"
 )
 
 type Cfg struct {
 	log *zap.Logger
-	SSH *kube.Client
+	SSH *kubeclient.Client
 }
 
-func NewConfig(l *zap.Logger) *Cfg {
+func NewConfig(l *zap.Logger, ctx context.Context) *Cfg {
 	return &Cfg{
 		log: l,
-		SSH: kube.NewSSHClient(l),
+		SSH: kubeclient.NewSSHClient(l, ctx),
 	}
 }
 
-func (c *Cfg) GetSSH() *kube.Client {
+func (c *Cfg) GetSSH() *kubeclient.Client {
 	return c.SSH
 }

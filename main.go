@@ -4,7 +4,7 @@ package main
 import (
 	"fmt"
 	"github.com/andrewbytecoder/k9fyne/config"
-	"github.com/andrewbytecoder/k9fyne/kube"
+	"github.com/andrewbytecoder/k9fyne/kube/topo"
 	"github.com/andrewbytecoder/k9fyne/widgets"
 	"go.uber.org/zap"
 	"log"
@@ -49,8 +49,8 @@ func main() {
 			intro.SetText(t.Intro)
 		}
 
-		if kube.K9InfoHandler != nil {
-			err := kube.K9InfoHandler.FetchData(&t)
+		if topo.K9InfoHandler != nil {
+			err := topo.K9InfoHandler.FetchData(&t)
 			if err != nil {
 				ctx.Log.Error("Failed to fetch data", zap.Error(err))
 				return

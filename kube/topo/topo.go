@@ -1,11 +1,12 @@
-package kube
+package topo
 
 import (
+	"github.com/andrewbytecoder/k9fyne/kube/pod"
 	"github.com/andrewbytecoder/k9fyne/widgets"
 )
 
 type K9Info struct {
-	PodInfoInterface
+	pod.KubePodInfoInterface
 }
 
 var K9InfoHandler *K9Info
@@ -23,9 +24,9 @@ func (f optionFunc) apply(k *K9Info) {
 }
 
 // SetPodInfoInterface 设置pod info interface
-func SetPodInfoInterface(podInfoInterface PodInfoInterface) Option {
+func SetPodInfoInterface(podInfoInterface pod.KubePodInfoInterface) Option {
 	return optionFunc(func(lc *K9Info) {
-		lc.PodInfoInterface = podInfoInterface
+		lc.KubePodInfoInterface = podInfoInterface
 	})
 }
 
@@ -48,7 +49,7 @@ func NewK9Info(op ...Option) *K9Info {
 func (k *K9Info) FetchData(tutorial *widgets.Tutorial) error {
 	switch tutorial.Title {
 	case "Pod info":
-		tutorial.Data = k.PodInfoInterface
+		tutorial.Data = k.KubePodInfoInterface
 		return nil
 	default:
 		return nil

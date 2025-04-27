@@ -1,34 +1,45 @@
 package widgets
 
 import (
+	"fmt"
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/andrewbytecoder/k9fyne/kube"
+	"github.com/andrewbytecoder/k9fyne/kube/pod"
+	corev1 "k8s.io/api/core/v1"
 	"strconv"
 )
 
 type PodWidgetsInfo struct {
 	currentNameSpace int
 	namespace        []string
+	namespaceSelect  *widget.Select // 命名空间名字
 	currentPod       int
 }
 
-func (p *PodWidgetsInfo) SetCurrentNameSpace(currentNameSpace int) {
-	// 超过正常的范围
-	if currentNameSpace > len(p.namespace) || currentNameSpace < 0 {
-		return
-	}
-	p.currentNameSpace = currentNameSpace
-	// 更新list链表里面的数据
+var podInfoCols = []string{
+	"Name",
+	"Status",
+	"PodIp",
+	"NodeIp",
+	"NodeName",
 }
 
-func makePodList(_ fyne.Window, d interface{}) fyne.CanvasObject {
+func (p *PodWidgetsInfo) SetCurrentNameSpace(idx int) {
+	// 超过正常的范围
+	if idx >= len(p.namespace) || idx < 0 {
+		return
+	}
+	// 保证这里只设置合法的 namespace 索引
+	p.currentNameSpace = idx
+	// 更新list链表里面的数据
+	p.namespaceSelect.SetSelected(p.namespace[idx])
+}
 
-	podInterface, ok := d.(kube.PodInfoInterface)
+func makePodList(win fyne.Window, d interface{}) fyne.CanvasObject {
+
+	podInterface, ok := d.(pod.KubePodInfoInterface)
 	if !ok {
 		return container.NewHSplit(widget.NewButton("podInterface is null", func() {}),
 			widget.NewButton("Set ssh config first", func() {}))
@@ -38,70 +49,89 @@ func makePodList(_ fyne.Window, d interface{}) fyne.CanvasObject {
 	b.namespace = podInterface.GetAllNamespace()
 
 	prev := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
-		b.setIcon(b.currentNameSpace - 1)
+		b.SetCurrentNameSpace(b.currentNameSpace - 1)
 	})
 	next := widget.NewButtonWithIcon("", theme.NavigateNextIcon(), func() {
-		b.setIcon(b.current + 1)
+		b.SetCurrentNameSpace(b.currentNameSpace + 1)
 	})
-	b.name = widget.NewSelect(iconList(b.icons), func(name string) {
-		for i, icon := range b.icons {
-			if icon.name == name {
-				if b.current != i {
-					b.setIcon(i)
+	// 选择并更新 namespace
+	b.namespaceSelect = widget.NewSelect(b.namespace, func(name string) {
+		for i, namespace := range b.namespace {
+			if namespace == name {
+				if b.currentNameSpace != i {
+					b.SetCurrentNameSpace(i)
 				}
 				break
 			}
 		}
 	})
-	b.name.SetSelected(b.icons[b.current].name)
+	b.namespaceSelect.SetSelected(b.namespace[b.currentNameSpace])
 	buttons := container.NewHBox(prev, next)
-	bar := container.NewBorder(nil, nil, buttons, nil, b.name)
+	bar := container.NewBorder(nil, nil, buttons, nil, b.namespaceSelect)
 
-	background := canvas.NewRasterWithPixels(checkerPattern)
-	background.SetMinSize(fyne.NewSize(280, 280))
-	b.icon = widget.NewIcon(b.icons[b.current].icon)
-
-	return container.NewBorder(bar, nil, nil, nil, background, b.icon)
-
-	data := make([]string, 1000)
-	for i := range data {
-		data[i] = "Test Item " + strconv.Itoa(i)
+	podList, err := podInterface.GetPodInfoByNamespace(b.namespace[b.currentNameSpace])
+	if err != nil {
+		return container.NewHSplit(widget.NewButton("podInterface is null", func() {}),
+			widget.NewButton("Set ssh config first", func() {}))
 	}
 
-	icon := widget.NewIcon(nil)
-	label := widget.NewLabel("Select An Item From The List")
-	hbox := container.NewHBox(icon, label)
+	podTable := makePodInfoTable(win, podList)
 
-	list := widget.NewList(
-		func() int {
-			return len(data)
-		},
+	return container.NewBorder(bar, nil, nil, nil, podTable)
+}
+
+func makePodInfoTable(_ fyne.Window, podList *corev1.PodList) fyne.CanvasObject {
+
+	rows := len(podList.Items)
+	cols := len(podInfoCols)
+	t := widget.NewTableWithHeaders(
+		func() (int, int) { return rows, cols },
 		func() fyne.CanvasObject {
-			return container.NewHBox(widget.NewIcon(theme.DocumentIcon()), widget.NewLabel("Template Object"))
+			return widget.NewLabel("Cell")
 		},
-		func(id widget.ListItemID, item fyne.CanvasObject) {
-			if id == 5 || id == 6 {
-				item.(*fyne.Container).Objects[1].(*widget.Label).SetText(data[id] + "\ntaller")
-			} else {
-				item.(*fyne.Container).Objects[1].(*widget.Label).SetText(data[id])
+		func(id widget.TableCellID, cell fyne.CanvasObject) {
+			label := cell.(*widget.Label)
+			switch id.Col {
+			case 0:
+				label.SetText(podList.Items[id.Row].Name)
+			case 1:
+				label.SetText(string(podList.Items[id.Row].Status.Phase))
+			case 2:
+				label.SetText(podList.Items[id.Row].Status.PodIP)
+			case 3:
+				label.SetText(podList.Items[id.Row].Status.HostIP)
+			case 4:
+				label.SetText(podList.Items[id.Row].Spec.NodeName)
+			default:
+				label.SetText(fmt.Sprintf("Cell %d, %d", id.Row+1, id.Col+1))
 			}
-		},
-	)
-	list.OnSelected = func(id widget.ListItemID) {
-		label.SetText(data[id])
-		icon.SetResource(theme.DocumentIcon())
+		})
+	t.CreateHeader = func() fyne.CanvasObject {
+		return widget.NewLabel("Header")
 	}
-	list.OnUnselected = func(id widget.ListItemID) {
-		label.SetText("Select An Item From The List")
-		icon.SetResource(nil)
+
+	t.UpdateHeader = func(id widget.TableCellID, cell fyne.CanvasObject) {
+		l := cell.(*widget.Label)
+		if id.Row < 0 {
+			// Col 这里从0开始
+			l.SetText(podInfoCols[id.Col])
+		} else if id.Col < 0 {
+			l.SetText(strconv.Itoa(id.Row + 1))
+		} else {
+			l.SetText("")
+		}
+
+		//label.SetText(podInfoCols[id.Col])
 	}
-	list.Select(125)
-	list.SetItemHeight(5, 50)
-	list.SetItemHeight(6, 50)
 
-	containerUI := container.NewHSplit(list, container.NewCenter(hbox))
+	t.StickyRowCount = 0
 
-	containerUI.Refresh()
+	t.SetColumnWidth(0, 420)
+	t.SetColumnWidth(1, 132)
+	t.SetColumnWidth(2, 320)
+	t.SetColumnWidth(3, 320)
+	t.SetColumnWidth(4, 260)
+	t.SetRowHeight(2, 50)
 
-	return containerUI
+	return t
 }

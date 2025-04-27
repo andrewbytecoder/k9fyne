@@ -1,4 +1,4 @@
-package kube
+package kubeclient
 
 import (
 	"go.uber.org/zap"
