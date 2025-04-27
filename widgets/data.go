@@ -12,7 +12,6 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
@@ -47,13 +46,13 @@ var (
 			k9Doc,
 			nil,
 		},
-		"canvastext": loadDefinition("Text", "canvas/text.md"),
-		"line":       loadDefinition("Line", "canvas/line.md"),
-		"rectangle":  loadDefinition("Rectangle", "canvas/rectangle.md"),
-		"circle":     loadDefinition("Circle", "canvas/circle.md"),
-		"image":      loadDefinition("Image", "canvas/image.md"),
-		"raster":     loadDefinition("Raster", "canvas/raster.md"),
-		"gradient":   loadDefinition("Gradient", "canvas/gradient.md"),
+		"canvastext": loadDefinition("Text", "docs/text.md"),
+		"line":       loadDefinition("Line", "docs/line.md"),
+		"rectangle":  loadDefinition("Rectangle", "docs/rectangle.md"),
+		"circle":     loadDefinition("Circle", "docs/circle.md"),
+		"image":      loadDefinition("Image", "docs/image.md"),
+		"raster":     loadDefinition("Raster", "docs/raster.md"),
+		"gradient":   loadDefinition("Gradient", "docs/gradient.md"),
 		"animations": {"Animations",
 			"See how to animate components.",
 			makeAnimationScreen,
@@ -122,9 +121,9 @@ var (
 			widgetScreen,
 			nil,
 		},
-		"accordion": loadDefinition("Accordion", "widgets/accordion.md"),
-		"activity":  loadDefinition("Activity", "widgets/activity.md"),
-		"button":    loadDefinition("Button", "widgets/button.md"),
+		"accordion": loadDefinition("Accordion", "docs/accordion.md"),
+		"activity":  loadDefinition("Activity", "docs/activity.md"),
+		"button":    loadDefinition("Button", "docs/button.md"),
 		"card": {"Card",
 			"Group content and widgets.",
 			makeCardTab,
@@ -252,20 +251,6 @@ func makeNewTutorial(file string) fyne.CanvasObject {
 		usage.Scroll = fyne.ScrollHorizontalOnly
 		highlightTextGrid(usage)
 
-		codeID := (i - 1) / 2
-		preview := tutorial.code[codeID]()
-
-		tools := widget.NewToolbar(
-			widget.NewToolbarAction(theme.ContentCopyIcon(), func() {
-				fyne.CurrentApp().Clipboard().SetContent(usage.Text())
-			}),
-			widget.NewToolbarAction(theme.MediaPlayIcon(), func() {
-				w := fyne.CurrentApp().NewWindow(tutorial.title + " preview")
-				w.SetContent(tutorial.code[codeID]())
-				w.Show()
-			}),
-		)
-
 		style := styles.Get("solarized-dark")
 		bg := styleBackgroundColor(chroma.Background, style)
 		prop := canvas.NewRectangle(color.Transparent)
@@ -275,10 +260,9 @@ func makeNewTutorial(file string) fyne.CanvasObject {
 			container.NewStack(
 				canvas.NewRectangle(bg),
 				container.NewPadded(usage,
-					container.NewHBox(layout.NewSpacer(), container.NewVBox(
-						tools)))))))
-		details.Add(widget.NewRichTextFromMarkdown("*Preview:*"))
-		details.Add(container.NewPadded(container.NewStack(prop, preview)))
+					container.NewHBox(layout.NewSpacer()))))))
+
+		details.Add(container.NewPadded(container.NewStack(prop)))
 	}
 
 	return container.NewBorder(top, nil, nil, nil, container.NewScroll(details))
