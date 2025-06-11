@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 	"github.com/andrewbytecoder/k9fyne/kube/pod"
+	"github.com/andrewbytecoder/k9fyne/kube/service"
 	"github.com/andrewbytecoder/k9fyne/kube/topo"
 	"github.com/andrewbytecoder/k9fyne/utils"
 	"github.com/melbahja/goph"
@@ -119,6 +120,7 @@ func (c *Client) CreateSSHClient(win fyne.Window) {
 	remember := fyne.CurrentApp().Preferences().Bool("remember")
 	check := widget.NewCheck("", func(checked bool) {
 		remember = checked
+		//
 		fyne.CurrentApp().Preferences().SetBool("remember", checked)
 	})
 	// 界面和真实数据之间要联动起来
@@ -210,7 +212,8 @@ func (c *Client) CreateSSHClient(win fyne.Window) {
 		}
 
 		// 获取成功创建 kube info 相关的客户端
-		topo.K9InfoHandler = topo.NewK9Info(topo.SetPodInfoInterface(pod.NewK9PodInfo(c.ctx, c.kc, c.log)))
+		topo.K9InfoHandler = topo.NewK9Info(topo.SetPodInfoInterface(pod.NewK9PodInfo(c.ctx, c.kc, c.log)),
+			topo.SetServiceInfoInterface(service.NewK9ServiceInfo(c.ctx, c.kc, c.log)))
 
 	}, win)
 	formDialog.Resize(fyne.NewSize(440, 280))

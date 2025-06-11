@@ -73,6 +73,8 @@ func main() {
 	split.Offset = 0.2
 	ctx.GetWindow().SetContent(split)
 	ctx.GetWindow().Resize(fyne.NewSize(640, 460))
+	// connect window
+	ctx.GetConfig().GetSSH().CreateSSHClient(topWindow)
 	ctx.GetWindow().ShowAndRun()
 }
 
@@ -104,7 +106,7 @@ func makeMenu(a fyne.App, w fyne.Window, c *config.Cfg) *fyne.MainMenu {
 	)
 
 	openSettings := func() {
-		w := a.NewWindow("Fyne Settings")
+		w := a.NewWindow("K9Fyne Settings")
 		w.SetContent(settings.NewSettings().LoadAppearanceScreen(w))
 		w.Resize(fyne.NewSize(440, 520))
 		w.Show()
