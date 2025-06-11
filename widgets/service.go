@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/andrewbytecoder/k9fyne/kube/service"
+	"github.com/andrewbytecoder/k9fyne/utils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strconv"
@@ -128,7 +129,7 @@ func makeServiceInfoTable(_ fyne.Window, list *corev1.ServiceList) *widget.Table
 			case 4:
 				label.SetText(generateServicePortsInfo(&list.Items[id.Row].Spec))
 			case 5:
-				label.SetText(calculateAge(list.Items[id.Row].CreationTimestamp))
+				label.SetText(utils.TimeFormat(list.Items[id.Row].CreationTimestamp.Time))
 			default:
 				label.SetText(fmt.Sprintf("Cell %d, %d", id.Row+1, id.Col+1))
 			}

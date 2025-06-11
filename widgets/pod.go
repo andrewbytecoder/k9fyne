@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/andrewbytecoder/k9fyne/kube/pod"
+	"github.com/andrewbytecoder/k9fyne/utils"
 	corev1 "k8s.io/api/core/v1"
 	"strconv"
 	"strings"
@@ -138,10 +139,7 @@ func makePodInfoTable(_ fyne.Window, podList *corev1.PodList) *widget.Table {
 			case 4:
 				label.SetText(podList.Items[id.Row].Spec.NodeName)
 			case 5:
-				creationTime := podList.Items[id.Row].ObjectMeta.CreationTimestamp.Time
-				duration := time.Since(creationTime)
-				age := formatDuration(duration)
-				label.SetText(age)
+				label.SetText(utils.TimeFormat(podList.Items[id.Row].ObjectMeta.CreationTimestamp.Time))
 			case 6:
 				label.SetText(GetContainerInfo(&podList.Items[id.Row]))
 			default:

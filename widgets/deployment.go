@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/andrewbytecoder/k9fyne/kube/deployment"
+	"github.com/andrewbytecoder/k9fyne/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	"strconv"
 )
@@ -123,7 +124,7 @@ func makeDeploymentInfoTable(_ fyne.Window, list *appsv1.DeploymentList) *widget
 			case 3:
 				label.SetText(strconv.Itoa(int(list.Items[id.Row].Status.AvailableReplicas)))
 			case 4:
-				label.SetText(calculateAge(list.Items[id.Row].CreationTimestamp))
+				label.SetText(utils.TimeFormat(list.Items[id.Row].CreationTimestamp.Time))
 			default:
 				label.SetText(fmt.Sprintf("Cell %d, %d", id.Row+1, id.Col+1))
 			}
