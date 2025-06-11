@@ -156,13 +156,13 @@ func makeMenu(a fyne.App, w fyne.Window, c *config.Cfg) *fyne.MainMenu {
 	// a quit item will be appended to our first (File) menu
 	file := fyne.NewMenu("File", newItem)
 	file.Items = append(file.Items, fyne.NewMenuItemSeparator(), settingsItem)
-	main := fyne.NewMainMenu(
+	mainMenu := fyne.NewMainMenu(
 		file,
 		fyne.NewMenu("Edit", cutItem, copyItem, pasteItem, fyne.NewMenuItemSeparator(), findItem),
 		helpMenu,
 	)
 
-	return main
+	return mainMenu
 }
 
 func makeTray(a fyne.App) {
