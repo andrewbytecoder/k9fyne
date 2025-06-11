@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
+	"github.com/andrewbytecoder/k9fyne/kube/deployment"
 	"github.com/andrewbytecoder/k9fyne/kube/pod"
 	"github.com/andrewbytecoder/k9fyne/kube/service"
 	"github.com/andrewbytecoder/k9fyne/kube/topo"
@@ -213,7 +214,9 @@ func (c *Client) CreateSSHClient(win fyne.Window) {
 
 		// 获取成功创建 kube info 相关的客户端
 		topo.K9InfoHandler = topo.NewK9Info(topo.SetPodInfoInterface(pod.NewK9PodInfo(c.ctx, c.kc, c.log)),
-			topo.SetServiceInfoInterface(service.NewK9ServiceInfo(c.ctx, c.kc, c.log)))
+			topo.SetServiceInfoInterface(service.NewK9ServiceInfo(c.ctx, c.kc, c.log)),
+			topo.SetDeploymentInfoInterface(deployment.NewK9DeploymentInfo(c.ctx, c.kc, c.log)),
+		)
 
 	}, win)
 	formDialog.Resize(fyne.NewSize(440, 280))

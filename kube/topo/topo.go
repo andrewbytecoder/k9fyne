@@ -1,14 +1,16 @@
 package topo
 
 import (
+	"github.com/andrewbytecoder/k9fyne/kube/deployment"
 	"github.com/andrewbytecoder/k9fyne/kube/pod"
 	"github.com/andrewbytecoder/k9fyne/kube/service"
 	"github.com/andrewbytecoder/k9fyne/widgets"
 )
 
 type K9Info struct {
-	KubePodInfoInterface     pod.KubePodInfoInterface
-	KubeServiceInfoInterface service.KubeServiceInfoInterface
+	kubePodInfoInterface        pod.KubePodInfoInterface
+	kubeServiceInfoInterface    service.KubeServiceInfoInterface
+	kubeDeploymentInfoInterface deployment.KubeDeploymentInfoInterface
 }
 
 var K9InfoHandler *K9Info
@@ -28,14 +30,21 @@ func (f optionFunc) apply(k *K9Info) {
 // SetPodInfoInterface 设置pod info interface
 func SetPodInfoInterface(podInfoInterface pod.KubePodInfoInterface) Option {
 	return optionFunc(func(lc *K9Info) {
-		lc.KubePodInfoInterface = podInfoInterface
+		lc.kubePodInfoInterface = podInfoInterface
 	})
 }
 
 // SetServiceInfoInterface 设置service info interface
 func SetServiceInfoInterface(serviceInfoInterface service.KubeServiceInfoInterface) Option {
 	return optionFunc(func(lc *K9Info) {
-		lc.KubeServiceInfoInterface = serviceInfoInterface
+		lc.kubeServiceInfoInterface = serviceInfoInterface
+	})
+}
+
+// SetDeploymentInfoInterface 设置deployment
+func SetDeploymentInfoInterface(infoInterface deployment.KubeDeploymentInfoInterface) Option {
+	return optionFunc(func(lc *K9Info) {
+		lc.kubeDeploymentInfoInterface = infoInterface
 	})
 }
 
@@ -58,10 +67,13 @@ func NewK9Info(op ...Option) *K9Info {
 func (k *K9Info) FetchData(tutorial *widgets.Tutorial) error {
 	switch tutorial.Title {
 	case "Pod info":
-		tutorial.Data = k.KubePodInfoInterface
+		tutorial.Data = k.kubePodInfoInterface
 		return nil
 	case "Service info":
-		tutorial.Data = k.KubeServiceInfoInterface
+		tutorial.Data = k.kubeServiceInfoInterface
+		return nil
+	case "Deployment info":
+		tutorial.Data = k.kubeDeploymentInfoInterface
 		return nil
 	default:
 		return nil

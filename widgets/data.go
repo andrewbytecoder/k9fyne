@@ -45,6 +45,10 @@ var (
 			"Show service info.",
 			makeServiceList, nil,
 		},
+		"deployment": {"Deployment info",
+			"Show deployment info.",
+			makeDeploymentList, nil,
+		},
 		"doc": {"Doc",
 			"使用指导文档和常见命令.",
 			k9Doc,
@@ -216,7 +220,7 @@ var (
 	// TutorialIndex  defines how our tutorials should be laid out in the index tree
 	TutorialIndex = map[string][]string{
 		"":            {"k8s", "doc", "widgets", "collections", "containers", "animations", "dialogs", "windows", "icons", "binding", "advanced"},
-		"k8s":         {"pods", "service"},
+		"k8s":         {"pods", "service", "deployment"},
 		"doc":         {"canvastext", "line", "rectangle", "circle", "image", "raster", "gradient"},
 		"collections": {"list", "table", "tree", "gridwrap"},
 		"containers":  {"apptabs", "border", "box", "center", "doctabs", "grid", "scroll", "split", "innerwindow"},
