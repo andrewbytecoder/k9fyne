@@ -1,15 +1,7 @@
-# Fyne Demo
-
-This repo is the new home of the Fyne demo application, migrated from `cmd/fyne_demo` in the main repository.
-
-
-![img.png](resources/k9fyne.png)
-
-### README (English)
-
+# k9fyne
 #### k9fyne - A Kubernetes Management Tool Using Fyne Framework
 
-![k9fyne Screenshot](attachment://screenshot.png)
+![img.png](resources/k9fyne.png)
 
 Welcome to **k9fyne**, a powerful and user-friendly tool for managing your Kubernetes clusters. Built using the Fyne framework, k9fyne provides an intuitive graphical interface that simplifies the management of Kubernetes resources.
 
