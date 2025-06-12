@@ -4,12 +4,10 @@ go 1.24.0
 
 toolchain go1.24.1
 
-replace github.com/fyne-io/demo => fyne.io/demo v1.6.0
-
 require (
+	fyne.io/demo v1.6.0
 	fyne.io/fyne/v2 v2.6.1
 	github.com/alecthomas/chroma/v2 v2.18.0
-	github.com/fyne-io/demo v0.0.0-20250411084315-c83a8ea96f00
 	github.com/google/go-containerregistry v0.20.5
 	github.com/melbahja/goph v1.4.0
 	github.com/stretchr/testify v1.10.0
