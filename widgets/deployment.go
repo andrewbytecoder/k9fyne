@@ -13,13 +13,13 @@ import (
 )
 
 type DeploymentWidgetsInfo struct {
-	currentNameSpace        int
-	namespace               []string
-	namespaceSelect         *widget.Select // 命名空间名字
-	currentPod              int
-	table                   *widget.Table // pod info table
-	deploymentInfoInterface deployment.KubeDeploymentInfoInterface
-	container               *fyne.Container
+	currentNameSpace int
+	namespace        []string
+	namespaceSelect  *widget.Select // 命名空间名字
+	currentPod       int
+	table            *widget.Table // pod info table
+	infoInterface    deployment.KubeDeploymentInfoInterface
+	container        *fyne.Container
 }
 
 var deploymentInfoCols = []string{
@@ -48,7 +48,7 @@ func (b *DeploymentWidgetsInfo) SetDeploymentCurrentNameSpace(idx int) {
 
 	if bFlush {
 		//	 表数据
-		list, err := b.deploymentInfoInterface.GetDeploymentInfoByNamespace(b.namespace[b.currentNameSpace])
+		list, err := b.infoInterface.GetDeploymentInfoByNamespace(b.namespace[b.currentNameSpace])
 		if err != nil {
 			return
 		}
@@ -69,7 +69,7 @@ func makeDeploymentList(win fyne.Window, d interface{}) fyne.CanvasObject {
 
 	b := &DeploymentWidgetsInfo{}
 	b.namespace = serviceInterface.GetAllNamespace()
-	b.deploymentInfoInterface = serviceInterface
+	b.infoInterface = serviceInterface
 	prev := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
 		b.SetDeploymentCurrentNameSpace(b.currentNameSpace - 1)
 	})

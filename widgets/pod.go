@@ -20,7 +20,7 @@ type PodWidgetsInfo struct {
 	namespaceSelect  *widget.Select // 命名空间名字
 	currentPod       int
 	table            *widget.Table // pod info table
-	podInfoInterface pod.KubePodInfoInterface
+	infoInterface    pod.KubePodInfoInterface
 	container        *fyne.Container
 }
 
@@ -52,7 +52,7 @@ func (b *PodWidgetsInfo) SetCurrentNameSpace(idx int) {
 
 	if bFlush {
 		//	 表数据
-		podList, err := b.podInfoInterface.GetPodInfoByNamespace(b.namespace[b.currentNameSpace])
+		podList, err := b.infoInterface.GetPodInfoByNamespace(b.namespace[b.currentNameSpace])
 		if err != nil {
 			return
 		}
@@ -74,7 +74,7 @@ func makePodList(win fyne.Window, d interface{}) fyne.CanvasObject {
 
 	b := &PodWidgetsInfo{}
 	b.namespace = podInterface.GetAllNamespace()
-	b.podInfoInterface = podInterface
+	b.infoInterface = podInterface
 	prev := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
 		b.SetCurrentNameSpace(b.currentNameSpace - 1)
 	})

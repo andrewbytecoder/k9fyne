@@ -54,7 +54,7 @@ var tutorials = map[string]GeneratedTutorial{`)
 }
 
 func processDirectories(w io.Writer) {
-	dirs := []string{"canvas", "widgets"}
+	dirs := []string{"docs"}
 
 	for _, dir := range dirs {
 		files, err := os.ReadDir(dir)

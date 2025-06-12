@@ -1,6 +1,7 @@
 package topo
 
 import (
+	"github.com/andrewbytecoder/k9fyne/kube/daemonsets"
 	"github.com/andrewbytecoder/k9fyne/kube/deployment"
 	"github.com/andrewbytecoder/k9fyne/kube/pod"
 	"github.com/andrewbytecoder/k9fyne/kube/service"
@@ -11,6 +12,7 @@ type K9Info struct {
 	kubePodInfoInterface        pod.KubePodInfoInterface
 	kubeServiceInfoInterface    service.KubeServiceInfoInterface
 	kubeDeploymentInfoInterface deployment.KubeDeploymentInfoInterface
+	kubeDaemonsetsInfoInterface daemonsets.KubeDaemonsetsInfoInterface
 }
 
 var K9InfoHandler *K9Info
@@ -48,6 +50,13 @@ func SetDeploymentInfoInterface(infoInterface deployment.KubeDeploymentInfoInter
 	})
 }
 
+// SetDaemonsetsInfoInterface 设置deployment
+func SetDaemonsetsInfoInterface(infoInterface daemonsets.KubeDaemonsetsInfoInterface) Option {
+	return optionFunc(func(lc *K9Info) {
+		lc.kubeDaemonsetsInfoInterface = infoInterface
+	})
+}
+
 func (k *K9Info) WithOptions(opts ...Option) *K9Info {
 	for _, opt := range opts {
 		opt.apply(k)
@@ -74,6 +83,9 @@ func (k *K9Info) FetchData(tutorial *widgets.Tutorial) error {
 		return nil
 	case "Deployment info":
 		tutorial.Data = k.kubeDeploymentInfoInterface
+		return nil
+	case "DaemonSets info":
+		tutorial.Data = k.kubeDaemonsetsInfoInterface
 		return nil
 	default:
 		return nil

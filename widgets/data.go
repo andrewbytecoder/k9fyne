@@ -49,11 +49,16 @@ var (
 			"Show deployment info.",
 			makeDeploymentList, nil,
 		},
+		"daemonSets": {"DaemonSets info",
+			"Show daemonSets info.",
+			makeDaemonSetsList, nil,
+		},
 		"doc": {"Doc",
 			"使用指导文档和常见命令.",
 			k9Doc,
 			nil,
 		},
+		"readme":     loadDefinition("Readme", "docs/readme.md"),
 		"canvastext": loadDefinition("Text", "docs/text.md"),
 		"line":       loadDefinition("Line", "docs/line.md"),
 		"rectangle":  loadDefinition("Rectangle", "docs/rectangle.md"),
@@ -66,7 +71,7 @@ var (
 	// TutorialIndex  defines how our tutorials should be laid out in the index tree
 	TutorialIndex = map[string][]string{
 		"":    {"k8s", "doc"},
-		"k8s": {"pods", "service", "deployment"},
+		"k8s": {"pods", "service", "deployment", "daemonSets"},
 		"doc": {"canvastext", "line", "rectangle", "circle", "image", "raster", "gradient"},
 	}
 )
