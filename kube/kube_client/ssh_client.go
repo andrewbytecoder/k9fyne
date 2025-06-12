@@ -11,6 +11,7 @@ import (
 	"github.com/andrewbytecoder/k9fyne/kube/deployment"
 	"github.com/andrewbytecoder/k9fyne/kube/pod"
 	"github.com/andrewbytecoder/k9fyne/kube/service"
+	"github.com/andrewbytecoder/k9fyne/kube/statefulsets"
 	"github.com/andrewbytecoder/k9fyne/kube/topo"
 	"github.com/andrewbytecoder/k9fyne/utils"
 	"github.com/melbahja/goph"
@@ -217,7 +218,8 @@ func (c *Client) CreateSSHClient(win fyne.Window) {
 		topo.K9InfoHandler = topo.NewK9Info(topo.SetPodInfoInterface(pod.NewK9PodInfo(c.ctx, c.kc, c.log)),
 			topo.SetServiceInfoInterface(service.NewK9ServiceInfo(c.ctx, c.kc, c.log)),
 			topo.SetDeploymentInfoInterface(deployment.NewK9DeploymentInfo(c.ctx, c.kc, c.log)),
-			topo.SetDaemonsetsInfoInterface(daemonsets.NewK9DaemonsetsInfo(c.ctx, c.kc, c.log)),
+			topo.SetDaemonSetsInfoInterface(daemonsets.NewK9DaemonSetsInfo(c.ctx, c.kc, c.log)),
+			topo.SetStatefulSetsInfoInterface(statefulsets.NewK9StatefulSetsInfo(c.ctx, c.kc, c.log)),
 		)
 
 	}, win)

@@ -53,6 +53,10 @@ var (
 			"Show daemonSets info.",
 			makeDaemonSetsList, nil,
 		},
+		"statefulSets": {"StatefulSets info",
+			"Show statefulSets info.",
+			makeStatefulSetsList, nil,
+		},
 		"doc": {"Doc",
 			"使用指导文档和常见命令.",
 			k9Doc,
@@ -71,7 +75,7 @@ var (
 	// TutorialIndex  defines how our tutorials should be laid out in the index tree
 	TutorialIndex = map[string][]string{
 		"":    {"k8s", "doc"},
-		"k8s": {"pods", "service", "deployment", "daemonSets"},
+		"k8s": {"pods", "service", "deployment", "daemonSets", "statefulSets"},
 		"doc": {"canvastext", "line", "rectangle", "circle", "image", "raster", "gradient"},
 	}
 )

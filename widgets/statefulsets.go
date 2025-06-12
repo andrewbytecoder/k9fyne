@@ -6,34 +6,29 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/andrewbytecoder/k9fyne/kube/daemonsets"
+	"github.com/andrewbytecoder/k9fyne/kube/statefulsets"
 	"github.com/andrewbytecoder/k9fyne/utils"
 	appsv1 "k8s.io/api/apps/v1"
 	"strconv"
 )
 
-type DaemonSetsWidgetsInfo struct {
+type StatefulSetsWidgetsInfo struct {
 	currentNameSpace int
 	namespace        []string
 	namespaceSelect  *widget.Select // 命名空间名字
 	currentPod       int
 	table            *widget.Table // pod info table
-	infoInterface    daemonsets.KubeDaemonSetsInfoInterface
+	infoInterface    statefulsets.KubeStatefulSetsInfoInterface
 	container        *fyne.Container
 }
 
-var daemonSetsInfoCols = []string{
+var statefulSetsInfoCols = []string{
 	"Name",
-	"Desired",
-	"Current",
 	"Ready",
-	"UP-TO-DATE",
-	"Available",
-	"NodeSelector",
 	"Age",
 }
 
-func (b *DaemonSetsWidgetsInfo) SetDaemonSetsCurrentNameSpace(idx int) {
+func (b *StatefulSetsWidgetsInfo) SetStatefulSetsCurrentNameSpace(idx int) {
 	// 超过正常的范围
 	if idx >= len(b.namespace) || idx < 0 {
 		return
@@ -51,11 +46,11 @@ func (b *DaemonSetsWidgetsInfo) SetDaemonSetsCurrentNameSpace(idx int) {
 
 	if bFlush {
 		//	 表数据
-		list, err := b.infoInterface.GetDaemonSetsInfoByNamespace(b.namespace[b.currentNameSpace])
+		list, err := b.infoInterface.GetStatefulSetsInfoByNamespace(b.namespace[b.currentNameSpace])
 		if err != nil {
 			return
 		}
-		table := makeDaemonSetsInfoTable(nil, list)
+		table := makeStatefulSetsInfoTable(nil, list)
 		b.container.Remove(b.table)
 		b.container.Add(table)
 		b.table = table
@@ -63,28 +58,28 @@ func (b *DaemonSetsWidgetsInfo) SetDaemonSetsCurrentNameSpace(idx int) {
 	}
 }
 
-func makeDaemonSetsList(win fyne.Window, d interface{}) fyne.CanvasObject {
-	serviceInterface, ok := d.(daemonsets.KubeDaemonSetsInfoInterface)
+func makeStatefulSetsList(win fyne.Window, d interface{}) fyne.CanvasObject {
+	serviceInterface, ok := d.(statefulsets.KubeStatefulSetsInfoInterface)
 	if !ok {
 		return container.NewHSplit(widget.NewButton("podInterface is null", func() {}),
 			widget.NewButton("Set ssh config first", func() {}))
 	}
 
-	b := &DaemonSetsWidgetsInfo{}
+	b := &StatefulSetsWidgetsInfo{}
 	b.namespace = serviceInterface.GetAllNamespace()
 	b.infoInterface = serviceInterface
 	prev := widget.NewButtonWithIcon("", theme.NavigateBackIcon(), func() {
-		b.SetDaemonSetsCurrentNameSpace(b.currentNameSpace - 1)
+		b.SetStatefulSetsCurrentNameSpace(b.currentNameSpace - 1)
 	})
 	next := widget.NewButtonWithIcon("", theme.NavigateNextIcon(), func() {
-		b.SetDaemonSetsCurrentNameSpace(b.currentNameSpace + 1)
+		b.SetStatefulSetsCurrentNameSpace(b.currentNameSpace + 1)
 	})
 	// 选择并更新 namespace
 	b.namespaceSelect = widget.NewSelect(b.namespace, func(name string) {
 		for i, namespace := range b.namespace {
 			if namespace == name {
 				if b.currentNameSpace != i {
-					b.SetDaemonSetsCurrentNameSpace(i)
+					b.SetStatefulSetsCurrentNameSpace(i)
 				}
 				break
 			}
@@ -94,20 +89,20 @@ func makeDaemonSetsList(win fyne.Window, d interface{}) fyne.CanvasObject {
 	buttons := container.NewHBox(prev, next)
 	bar := container.NewBorder(nil, nil, buttons, nil, b.namespaceSelect)
 
-	podList, err := serviceInterface.GetDaemonSetsInfoByNamespace(b.namespace[b.currentNameSpace])
+	podList, err := serviceInterface.GetStatefulSetsInfoByNamespace(b.namespace[b.currentNameSpace])
 	if err != nil {
 		return container.NewHSplit(widget.NewButton("serviceInterface is null", func() {}),
 			widget.NewButton("Set ssh config first", func() {}))
 	}
 
-	b.table = makeDaemonSetsInfoTable(nil, podList)
+	b.table = makeStatefulSetsInfoTable(nil, podList)
 	b.container = container.NewBorder(bar, nil, nil, nil, b.table)
 	return b.container
 }
 
-func makeDaemonSetsInfoTable(_ fyne.Window, list *appsv1.DaemonSetList) *widget.Table {
+func makeStatefulSetsInfoTable(_ fyne.Window, list *appsv1.StatefulSetList) *widget.Table {
 	rows := len(list.Items)
-	cols := len(daemonSetsInfoCols)
+	cols := len(statefulSetsInfoCols)
 	t := widget.NewTableWithHeaders(
 		func() (int, int) { return rows, cols },
 		func() fyne.CanvasObject {
@@ -120,18 +115,8 @@ func makeDaemonSetsInfoTable(_ fyne.Window, list *appsv1.DaemonSetList) *widget.
 			case 0:
 				label.SetText(item.Name)
 			case 1:
-				label.SetText(strconv.Itoa(int(item.Status.DesiredNumberScheduled)))
+				label.SetText(strconv.Itoa(int(item.Status.ReadyReplicas)))
 			case 2:
-				label.SetText(strconv.Itoa(int(item.Status.CurrentNumberScheduled)))
-			case 3:
-				label.SetText(strconv.Itoa(int(item.Status.NumberReady)))
-			case 4:
-				label.SetText(strconv.Itoa(int(item.Status.UpdatedNumberScheduled)))
-			case 5:
-				label.SetText(strconv.Itoa(int(item.Status.NumberAvailable)))
-			case 6:
-				label.SetText(getNodeSelector(&item))
-			case 7:
 				label.SetText(utils.TimeFormat(list.Items[id.Row].CreationTimestamp.Time))
 			default:
 				label.SetText(fmt.Sprintf("Cell %d, %d", id.Row+1, id.Col+1))
@@ -145,7 +130,7 @@ func makeDaemonSetsInfoTable(_ fyne.Window, list *appsv1.DaemonSetList) *widget.
 		l := cell.(*widget.Label)
 		if id.Row < 0 {
 			// Col 这里从0开始
-			l.SetText(daemonSetsInfoCols[id.Col])
+			l.SetText(statefulSetsInfoCols[id.Col])
 		} else if id.Col < 0 {
 			l.SetText(strconv.Itoa(id.Row + 1))
 		} else {
@@ -159,26 +144,9 @@ func makeDaemonSetsInfoTable(_ fyne.Window, list *appsv1.DaemonSetList) *widget.
 
 	t.SetColumnWidth(0, 320)
 	t.SetColumnWidth(1, 80)
-	t.SetColumnWidth(2, 80)
-	t.SetColumnWidth(3, 80)
-	t.SetColumnWidth(4, 120)
-	t.SetColumnWidth(5, 120)
-	t.SetColumnWidth(6, 230)
-	t.SetColumnWidth(7, 230)
+	t.SetColumnWidth(2, 230)
+
 	t.SetRowHeight(2, 50)
 
 	return t
-}
-
-func getNodeSelector(ds *appsv1.DaemonSet) string {
-	nodeSelector := ds.Spec.Template.Spec.NodeSelector
-	if len(nodeSelector) == 0 {
-		return "<none>"
-	}
-
-	var result string
-	for k, v := range nodeSelector {
-		result += fmt.Sprintf("%s=%s,", k, v)
-	}
-	return result[:len(result)-1] // 去掉最后的逗号
 }

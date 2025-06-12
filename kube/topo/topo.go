@@ -5,14 +5,16 @@ import (
 	"github.com/andrewbytecoder/k9fyne/kube/deployment"
 	"github.com/andrewbytecoder/k9fyne/kube/pod"
 	"github.com/andrewbytecoder/k9fyne/kube/service"
+	"github.com/andrewbytecoder/k9fyne/kube/statefulsets"
 	"github.com/andrewbytecoder/k9fyne/widgets"
 )
 
 type K9Info struct {
-	kubePodInfoInterface        pod.KubePodInfoInterface
-	kubeServiceInfoInterface    service.KubeServiceInfoInterface
-	kubeDeploymentInfoInterface deployment.KubeDeploymentInfoInterface
-	kubeDaemonsetsInfoInterface daemonsets.KubeDaemonsetsInfoInterface
+	kubePodInfoInterface          pod.KubePodInfoInterface
+	kubeServiceInfoInterface      service.KubeServiceInfoInterface
+	kubeDeploymentInfoInterface   deployment.KubeDeploymentInfoInterface
+	kubeDaemonSetsInfoInterface   daemonsets.KubeDaemonSetsInfoInterface
+	kubeStatefulSetsInfoInterface statefulsets.KubeStatefulSetsInfoInterface
 }
 
 var K9InfoHandler *K9Info
@@ -50,10 +52,17 @@ func SetDeploymentInfoInterface(infoInterface deployment.KubeDeploymentInfoInter
 	})
 }
 
-// SetDaemonsetsInfoInterface 设置deployment
-func SetDaemonsetsInfoInterface(infoInterface daemonsets.KubeDaemonsetsInfoInterface) Option {
+// SetDaemonSetsInfoInterface 设置deployment
+func SetDaemonSetsInfoInterface(infoInterface daemonsets.KubeDaemonSetsInfoInterface) Option {
 	return optionFunc(func(lc *K9Info) {
-		lc.kubeDaemonsetsInfoInterface = infoInterface
+		lc.kubeDaemonSetsInfoInterface = infoInterface
+	})
+}
+
+// SetStatefulSetsInfoInterface 设置deployment
+func SetStatefulSetsInfoInterface(infoInterface statefulsets.KubeStatefulSetsInfoInterface) Option {
+	return optionFunc(func(lc *K9Info) {
+		lc.kubeStatefulSetsInfoInterface = infoInterface
 	})
 }
 
@@ -85,7 +94,10 @@ func (k *K9Info) FetchData(tutorial *widgets.Tutorial) error {
 		tutorial.Data = k.kubeDeploymentInfoInterface
 		return nil
 	case "DaemonSets info":
-		tutorial.Data = k.kubeDaemonsetsInfoInterface
+		tutorial.Data = k.kubeDaemonSetsInfoInterface
+		return nil
+	case "StatefulSets info":
+		tutorial.Data = k.kubeStatefulSetsInfoInterface
 		return nil
 	default:
 		return nil

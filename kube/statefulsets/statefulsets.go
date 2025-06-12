@@ -1,4 +1,4 @@
-package daemonsets
+package statefulsets
 
 import (
 	"context"
@@ -10,34 +10,34 @@ import (
 	"time"
 )
 
-type K9DaemonSetsInfo struct {
+type K9StatefulSetsInfo struct {
 	ctx     context.Context
 	log     *zap.Logger
 	kc      *kubernetes.Clientset
 	podList *corev1.PodList
-	podsMap map[string]*KubeDaemonSetsInfo // namespace to pods
+	podsMap map[string]*KubeStatefulSetsInfo // namespace to pods
 }
 
-func NewK9DaemonSetsInfo(ctx context.Context, k *kubernetes.Clientset, log *zap.Logger) *K9DaemonSetsInfo {
-	return &K9DaemonSetsInfo{
+func NewK9StatefulSetsInfo(ctx context.Context, k *kubernetes.Clientset, log *zap.Logger) *K9StatefulSetsInfo {
+	return &K9StatefulSetsInfo{
 		ctx:     ctx,
 		log:     log,
 		kc:      k,
 		podList: nil,
-		podsMap: make(map[string]*KubeDaemonSetsInfo),
+		podsMap: make(map[string]*KubeStatefulSetsInfo),
 	}
 }
 
-type KubeDaemonSetsInfo struct {
+type KubeStatefulSetsInfo struct {
 	podMap map[string]corev1.Pod // Pod name 2 Pod
 }
 
-type KubeDaemonSetsInfoInterface interface {
+type KubeStatefulSetsInfoInterface interface {
 	GetAllNamespace() []string
-	GetDaemonSetsInfoByNamespace(namespace string) (*appsv1.DaemonSetList, error)
+	GetStatefulSetsInfoByNamespace(namespace string) (*appsv1.StatefulSetList, error)
 }
 
-func (p *K9DaemonSetsInfo) GetAllNamespace() []string {
+func (p *K9StatefulSetsInfo) GetAllNamespace() []string {
 	ctx, cancel := context.WithTimeout(p.ctx, 10*time.Second)
 	defer cancel()
 	// 3. 获取所有的 Namespace
@@ -53,9 +53,9 @@ func (p *K9DaemonSetsInfo) GetAllNamespace() []string {
 	return allNamespace
 }
 
-func (p *K9DaemonSetsInfo) GetDaemonSetsInfoByNamespace(namespace string) (*appsv1.DaemonSetList, error) {
+func (p *K9StatefulSetsInfo) GetStatefulSetsInfoByNamespace(namespace string) (*appsv1.StatefulSetList, error) {
 	ctx, cancel := context.WithTimeout(p.ctx, 10*time.Second)
 	defer cancel()
 
-	return p.kc.AppsV1().DaemonSets(namespace).List(ctx, metav1.ListOptions{})
+	return p.kc.AppsV1().StatefulSets(namespace).List(ctx, metav1.ListOptions{})
 }
