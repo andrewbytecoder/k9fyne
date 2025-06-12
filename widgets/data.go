@@ -57,6 +57,15 @@ var (
 			"Show statefulSets info.",
 			makeStatefulSetsList, nil,
 		},
+		"image": {"Image",
+			"镜像管理.",
+			k9Doc,
+			nil,
+		},
+		"pullImage": {"StatefulSets info",
+			"Show statefulSets info.",
+			makeStatefulSetsList, nil,
+		},
 		"doc": {"Doc",
 			"使用指导文档和常见命令.",
 			k9Doc,
@@ -67,16 +76,16 @@ var (
 		"line":       loadDefinition("Line", "docs/line.md"),
 		"rectangle":  loadDefinition("Rectangle", "docs/rectangle.md"),
 		"circle":     loadDefinition("Circle", "docs/circle.md"),
-		"image":      loadDefinition("Image", "docs/image.md"),
 		"raster":     loadDefinition("Raster", "docs/raster.md"),
 		"gradient":   loadDefinition("Gradient", "docs/gradient.md"),
 	}
 
 	// TutorialIndex  defines how our tutorials should be laid out in the index tree
 	TutorialIndex = map[string][]string{
-		"":    {"k8s", "doc"},
-		"k8s": {"pods", "service", "deployment", "daemonSets", "statefulSets"},
-		"doc": {"canvastext", "line", "rectangle", "circle", "image", "raster", "gradient"},
+		"":      {"k8s", "doc"},
+		"k8s":   {"pods", "service", "deployment", "daemonSets", "statefulSets"},
+		"image": {"pullImage"},
+		"doc":   {"canvastext", "line", "rectangle", "circle", "image", "raster", "gradient"},
 	}
 )
 
