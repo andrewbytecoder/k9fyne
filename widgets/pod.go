@@ -11,7 +11,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type PodWidgetsInfo struct {
@@ -60,6 +59,7 @@ func (b *PodWidgetsInfo) SetCurrentNameSpace(idx int) {
 		b.container.Remove(b.table)
 		b.container.Add(table)
 		b.table = table
+
 		b.container.Refresh()
 	}
 }
@@ -107,17 +107,7 @@ func makePodList(win fyne.Window, d interface{}) fyne.CanvasObject {
 	return b.container
 }
 
-// formatDuration 格式化时间差为人类可读的形式
-func formatDuration(duration time.Duration) string {
-	days := int(duration.Hours() / 24)
-	hours := int(duration.Hours()) % 24
-	minutes := int(duration.Minutes()) % 60
-	seconds := int(duration.Seconds()) % 60
-
-	return fmt.Sprintf("%dd %dh %dm %ds", days, hours, minutes, seconds)
-}
 func makePodInfoTable(_ fyne.Window, podList *corev1.PodList) *widget.Table {
-
 	rows := len(podList.Items)
 	cols := len(podInfoCols)
 	t := widget.NewTableWithHeaders(

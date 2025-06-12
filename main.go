@@ -25,7 +25,6 @@ var topWindow fyne.Window
 
 func main() {
 	ctx := config.NewCtx()
-
 	ctx.App.SetIcon(resources.K9FyneFireLogo)
 	makeTray(ctx.App)
 	logLifecycle(ctx.App, ctx.GetLogger())
