@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/andrewbytecoder/k9fyne/config"
 	"github.com/andrewbytecoder/k9fyne/kube/topo"
+	"github.com/andrewbytecoder/k9fyne/resources"
 	"github.com/andrewbytecoder/k9fyne/widgets"
 	"go.uber.org/zap"
 	"log"
@@ -16,8 +17,6 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-
-	"github.com/andrewbytecoder/k9fyne/data"
 )
 
 const preferenceCurrentTutorial = "currentTutorial"
@@ -27,7 +26,7 @@ var topWindow fyne.Window
 func main() {
 	ctx := config.NewCtx()
 
-	ctx.App.SetIcon(data.FyneLogo)
+	ctx.App.SetIcon(resources.K9FyneFireLogo)
 	makeTray(ctx.App)
 	logLifecycle(ctx.App, ctx.GetLogger())
 	topWindow = ctx.App.NewWindow("k9fyne")

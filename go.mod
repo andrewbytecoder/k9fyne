@@ -2,6 +2,8 @@ module github.com/andrewbytecoder/k9fyne
 
 go 1.24.0
 
+toolchain go1.24.1
+
 replace github.com/fyne-io/demo => fyne.io/demo v1.6.0
 
 require (

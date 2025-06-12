@@ -1,7 +1,7 @@
 package widgets
 
 import (
-	"github.com/andrewbytecoder/k9fyne/data"
+	"github.com/andrewbytecoder/k9fyne/resources"
 	"image/color"
 	"net/url"
 	"strings"
@@ -24,7 +24,7 @@ func parseURL(urlStr string) *url.URL {
 }
 
 func welcomeScreen(_ fyne.Window, Data interface{}) fyne.CanvasObject {
-	logo := canvas.NewImageFromResource(data.FyneLogoTransparent)
+	logo := canvas.NewImageFromResource(resources.K9FyneLogo)
 	logo.FillMode = canvas.ImageFillContain
 	if fyne.CurrentDevice().IsMobile() {
 		logo.SetMinSize(fyne.NewSize(192, 192))
@@ -42,7 +42,7 @@ func welcomeScreen(_ fyne.Window, Data interface{}) fyne.CanvasObject {
 		layout.NewSpacer(),
 	)
 
-	authors := widget.NewRichTextFromMarkdown(formatAuthors(string(data.Authors.Content())))
+	authors := widget.NewRichTextFromMarkdown(formatAuthors(string(resources.Authors.Content())))
 	content := container.NewVBox(
 		widget.NewLabelWithStyle("\n\nWelcome to the k9fyne tools", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		logo,
@@ -53,7 +53,7 @@ func welcomeScreen(_ fyne.Window, Data interface{}) fyne.CanvasObject {
 	bgColor := withAlpha(theme.Color(theme.ColorNameBackground), 0xe0)
 	shadowColor := withAlpha(theme.Color(theme.ColorNameBackground), 0x33)
 
-	underlay := canvas.NewImageFromResource(data.FyneLogo)
+	underlay := canvas.NewImageFromResource(resources.K9FyneFireLogo)
 	bg := canvas.NewRectangle(bgColor)
 	underlayer := underLayout{}
 	slideBG := container.New(underlayer, underlay)
