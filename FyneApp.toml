@@ -1,21 +1,5 @@
 [Details]
   Icon = "Icon.png"
-  Name = "Fyne Demo"
-  ID = "io.fyne.demo"
-  Version = "2.6.0"
-  Build = 1
+  Name = "k9fyne"
+  ID = "com.github.andrewbytecoder.k9fyne"
 
-[Source]
-  Repo = "https://github.com/fyne-io/demo"
-
-[Development]
-  HelperText = "This binary was built with debug symbols"
-
-[Release]
-  HelperText = "This binary was built without debug symbols"
-
-[LinuxAndBSD]
-  GenericName = "Toolkit Demo"
-  Categories = ["Development"]
-  Comment = "A demo of Fyne and its capabilities."
-  Keywords = ["demo", "fyne"]
