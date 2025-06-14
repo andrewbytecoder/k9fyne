@@ -25,7 +25,15 @@ Welcome to **k9fyne**, a powerful and user-friendly tool for managing your Kuber
     - Clone the repository: `git clone https://github.com/yourusername/k9fyne.git`
     - Build the application: `go build -o k9fyne main.go`
 
-2. **Usage**:
+2. **Handling Dependencies**
+   - If you are using a proxy within China, you can disable GOSUM verification:
+      ```bash
+      go env -w GOPROXY=https://goproxy.cn,direct
+      go env -w GOSUMDB=off
+      ```
+     This will disable module hash database verification and is suitable for trusted network environments or development/debugging purposes.
+
+3. **Usage**:
     - Run the application: `./k9fyne`
     - Connect to your Kubernetes cluster by configuring the necessary credentials.
     - Navigate through the menu options to manage different Kubernetes resources.

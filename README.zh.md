@@ -26,7 +26,14 @@
     - 克隆仓库: `git clone https://github.com/yourusername/k9fyne.git`
     - 构建应用程序: `go build -o k9fyne main.go`
 
-2. **使用**:
+2. **处理依赖**
+   - 如果你在国内使用设置了代理，可以关闭GOSUM验证
+   ```bash
+   go env -w GOPROXY=https://goproxy.cn,direct
+   go env -w GOSUMDB=off
+   ```
+   这样会禁用模块哈希数据库验证，适用于可信网络环境或开发调试。
+3. **使用**:
     - 运行应用程序: `./k9fyne`
     - 通过配置必要的凭据连接到您的 Kubernetes 集群。
     - 通过菜单选项导航来管理不同的 Kubernetes 资源。
