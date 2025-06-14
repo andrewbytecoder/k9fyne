@@ -3,6 +3,8 @@ package pullimage
 import (
 	"context"
 	"fmt"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/widget"
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/name"
 	"github.com/google/go-containerregistry/pkg/v1/empty"
@@ -41,10 +43,13 @@ type KubePullImageInfo struct {
 
 type KubePullImageInfoInterface interface {
 	GetAllTags(ref string) []string
-	GetPullImageInfoByNamespace(ref string, tag string) error
+	PullImage(ref string, tag string, progressBar *widget.ProgressBar) error
 }
 
 func (p *K9PullImageInfo) GetAllTags(ref string) []string {
+	if ref == "" {
+		return []string{}
+	}
 	repo, err := name.NewRepository(ref)
 	if err != nil {
 		log.Fatalf("Error constructing repo name %q: %v", ref, err)
@@ -60,7 +65,7 @@ func (p *K9PullImageInfo) GetAllTags(ref string) []string {
 	return tags
 }
 
-func (p *K9PullImageInfo) GetPullImageInfoByNamespace(imageName string, tag string) error {
+func (p *K9PullImageInfo) PullImage(imageName string, tag string, progressBar *widget.ProgressBar) error {
 	refStr := strings.Join([]string{imageName, tag}, ":")
 	// 2. 解析镜像引用（包含 registry、repository 和 tag）
 	ref, err := name.ParseReference(refStr)
@@ -107,7 +112,9 @@ func (p *K9PullImageInfo) GetPullImageInfoByNamespace(imageName string, tag stri
 	if err != nil {
 		return err
 	}
-
+	fyne.Do(func() {
+		progressBar.SetValue(100)
+	})
 	fmt.Println("✅ Image saved successfully.")
 	return nil
 }

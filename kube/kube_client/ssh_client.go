@@ -10,6 +10,7 @@ import (
 	"github.com/andrewbytecoder/k9fyne/kube/daemonsets"
 	"github.com/andrewbytecoder/k9fyne/kube/deployment"
 	"github.com/andrewbytecoder/k9fyne/kube/pod"
+	pullimage "github.com/andrewbytecoder/k9fyne/kube/pull_image"
 	"github.com/andrewbytecoder/k9fyne/kube/service"
 	"github.com/andrewbytecoder/k9fyne/kube/statefulsets"
 	"github.com/andrewbytecoder/k9fyne/kube/topo"
@@ -220,6 +221,7 @@ func (c *Client) CreateSSHClient(win fyne.Window) {
 			topo.SetDeploymentInfoInterface(deployment.NewK9DeploymentInfo(c.ctx, c.kc, c.log)),
 			topo.SetDaemonSetsInfoInterface(daemonsets.NewK9DaemonSetsInfo(c.ctx, c.kc, c.log)),
 			topo.SetStatefulSetsInfoInterface(statefulsets.NewK9StatefulSetsInfo(c.ctx, c.kc, c.log)),
+			topo.SetPullImageInfoInterface(pullimage.NewK9PullImageInfo(c.ctx, c.kc, c.log)),
 		)
 
 	}, win)

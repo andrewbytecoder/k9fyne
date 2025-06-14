@@ -4,6 +4,7 @@ import (
 	"github.com/andrewbytecoder/k9fyne/kube/daemonsets"
 	"github.com/andrewbytecoder/k9fyne/kube/deployment"
 	"github.com/andrewbytecoder/k9fyne/kube/pod"
+	pullimage "github.com/andrewbytecoder/k9fyne/kube/pull_image"
 	"github.com/andrewbytecoder/k9fyne/kube/service"
 	"github.com/andrewbytecoder/k9fyne/kube/statefulsets"
 	"github.com/andrewbytecoder/k9fyne/widgets"
@@ -15,6 +16,7 @@ type K9Info struct {
 	kubeDeploymentInfoInterface   deployment.KubeDeploymentInfoInterface
 	kubeDaemonSetsInfoInterface   daemonsets.KubeDaemonSetsInfoInterface
 	kubeStatefulSetsInfoInterface statefulsets.KubeStatefulSetsInfoInterface
+	kubePullImageInfoInterface    pullimage.KubePullImageInfoInterface
 }
 
 var K9InfoHandler *K9Info
@@ -66,6 +68,13 @@ func SetStatefulSetsInfoInterface(infoInterface statefulsets.KubeStatefulSetsInf
 	})
 }
 
+// SetPullImageInfoInterface 设置deployment
+func SetPullImageInfoInterface(infoInterface pullimage.KubePullImageInfoInterface) Option {
+	return optionFunc(func(lc *K9Info) {
+		lc.kubePullImageInfoInterface = infoInterface
+	})
+}
+
 func (k *K9Info) WithOptions(opts ...Option) *K9Info {
 	for _, opt := range opts {
 		opt.apply(k)
@@ -98,6 +107,9 @@ func (k *K9Info) FetchData(tutorial *widgets.Tutorial) error {
 		return nil
 	case "StatefulSets info":
 		tutorial.Data = k.kubeStatefulSetsInfoInterface
+		return nil
+	case "PullImage info":
+		tutorial.Data = k.kubePullImageInfoInterface
 		return nil
 	default:
 		return nil

@@ -59,12 +59,12 @@ var (
 		},
 		"image": {"Image",
 			"镜像管理.",
-			k9Doc,
+			makeToolbarTab,
 			nil,
 		},
-		"pullImage": {"StatefulSets info",
-			"Show statefulSets info.",
-			makeStatefulSetsList, nil,
+		"pullImage": {"PullImage info",
+			"Show pullImage info.",
+			makePullImageList, nil,
 		},
 		"doc": {"Doc",
 			"使用指导文档和常见命令.",
@@ -82,10 +82,10 @@ var (
 
 	// TutorialIndex  defines how our tutorials should be laid out in the index tree
 	TutorialIndex = map[string][]string{
-		"":      {"k8s", "doc"},
+		"":      {"k8s", "image", "doc"},
 		"k8s":   {"pods", "service", "deployment", "daemonSets", "statefulSets"},
 		"image": {"pullImage"},
-		"doc":   {"canvastext", "line", "rectangle", "circle", "image", "raster", "gradient"},
+		"doc":   {"canvastext", "line", "rectangle", "circle", "raster", "gradient"},
 	}
 )
 
