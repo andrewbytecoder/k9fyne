@@ -225,6 +225,11 @@ func (c *Client) CreateSSHClient(win fyne.Window) {
 		)
 
 	}, win)
+
+	topo.K9InfoHandler = topo.NewK9Info(
+		topo.SetPullImageInfoInterface(pullimage.NewK9PullImageInfo(c.ctx, c.kc, c.log)),
+	)
+
 	formDialog.Resize(fyne.NewSize(440, 280))
 	formDialog.Show()
 }
