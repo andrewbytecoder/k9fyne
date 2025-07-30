@@ -21,6 +21,7 @@ import (
 
 const preferenceCurrentTutorial = "currentTutorial"
 
+// global
 var topWindow fyne.Window
 
 func main() {
