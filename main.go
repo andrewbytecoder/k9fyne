@@ -19,6 +19,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+// Preference key
 const preferenceCurrentTutorial = "currentTutorial"
 
 // global
